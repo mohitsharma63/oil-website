@@ -1,0 +1,16 @@
+D:\New folder (9)\oli\src\main\java\com\oli\oli\App.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\config\WebConfig.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\CategoryController.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\SliderController.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\SubCategoryController.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\CategoryDto.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\SliderDto.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\SubCategoryDto.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\exception\ApiExceptionHandler.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\model\Category.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\model\Slider.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\model\SubCategory.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\CategoryRepository.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\SliderRepository.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\SubCategoryRepository.java
+D:\New folder (9)\oli\src\main\java\com\oli\oli\service\FileStorageService.java
