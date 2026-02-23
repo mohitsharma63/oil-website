@@ -1,6 +1,6 @@
 package com.oli.oli.model;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,22 +31,17 @@ public class TermsAndConditions {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    @Column(name = "last_updated")
+    private LocalDateTime lastUpdated;
 
     @PrePersist
     void prePersist() {
-        Instant now = Instant.now();
-        createdAt = now;
-        updatedAt = now;
+        lastUpdated = LocalDateTime.now();
     }
 
     @PreUpdate
     void preUpdate() {
-        updatedAt = Instant.now();
+        lastUpdated = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -89,11 +84,11 @@ public class TermsAndConditions {
         this.isActive = isActive;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
     }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }
