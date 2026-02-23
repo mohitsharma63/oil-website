@@ -27,7 +27,7 @@ export interface Product {
   benefits?: string[];
   howToUse?: string;
   size?: string;
-  tags?: string[];
+  tags?: string | string[];
 }
 
 export interface Category {
@@ -56,4 +56,33 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedVariant?: string;
+}
+
+export interface FilterOptions {
+  tags: string[];
+  sizes: string[];
+  sortOptions: SortOption[];
+}
+
+export interface SortOption {
+  value: string;
+  label: string;
+}
+
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPageResponse {
+  users: User[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

@@ -157,9 +157,12 @@ export default function ProductDetail() {
               </Badge>
             )}
             <img
-              src={oliAssetUrl(product.imageUrl) ?? product.imageUrl}
+              src={oliAssetUrl(product.imageUrl) || product.imageUrl || "/placeholder-product.jpg"}
               alt={product.name}
               className="w-full h-auto rounded-2xl shadow-lg"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder-product.jpg";
+              }}
             />
           </div>
 

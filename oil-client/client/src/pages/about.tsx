@@ -33,7 +33,7 @@ export default function About() {
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">About </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            We're on a mission to revolutionize beauty and wellness through science-backed formulations, 
+            We're on a mission to revolutionize RAJYADU through science-backed formulations, 
             natural ingredients, and sustainable practices that empower everyone to discover their unique glow.
           </p>
         </div>
@@ -106,7 +106,7 @@ export default function About() {
         <div className="bg-gradient-to-r from-amber-50 to-neutral-50 rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            To make high-quality, effective beauty and wellness products accessible to everyone, 
+            To make high-quality, effective RAJYADU products accessible to everyone, 
             while maintaining our commitment to natural ingredients, ethical practices, and 
             scientific innovation. We believe that everyone deserves to feel confident and 
             beautiful in their own skin.

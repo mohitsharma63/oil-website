@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { Link } from "wouter";
@@ -7,7 +7,7 @@ import ProductCard from "@/components/product-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Product, Category, SubCategory } from "@/lib/types";
+import type { Product, Category, SubCategory, FilterOptions } from "@/lib/types";
 import { oliGetJson, oliUrl } from "@/lib/oliApi";
 
 export default function CategoryPage() {
@@ -23,10 +23,22 @@ export default function CategoryPage() {
   })();
 
   const [selectedSubcategory, setSelectedSubcategory] = useState(querySub || "all");
+  const [selectedSort, setSelectedSort] = useState("popular");
+  const [selectedTag, setSelectedTag] = useState("all");
 
   useEffect(() => {
     setSelectedSubcategory(querySub || "all");
   }, [categorySlug, querySub]);
+
+  // Reset filters when category changes
+  useEffect(() => {
+    setSelectedTag("all");
+    setSelectedSort("popular");
+    // Keep subcategory if it's in the URL, otherwise reset to "all"
+    if (!querySub) {
+      setSelectedSubcategory("all");
+    }
+  }, [categorySlug]);
 
   const { data: categories, isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: [oliUrl("/api/categories")],
@@ -47,24 +59,118 @@ export default function CategoryPage() {
     queryFn: () => oliGetJson<Product[]>("/api/products"),
   });
 
+  const { data: filterOptions, isLoading: filtersLoading } = useQuery<FilterOptions>({
+    queryKey: [oliUrl("/api/products/filters")],
+    queryFn: () => oliGetJson<FilterOptions>("/api/products/filters"),
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
   const selectedSubCategoryId =
     selectedSubcategory === "all"
       ? undefined
       : subcategories?.find((sc) => sc.slug === selectedSubcategory)?.id;
 
-  // Filter products based on selected subcategory
-  const products = allProducts.filter((product) => {
-    const matchesCategory =
-      !!categoryId &&
-      (product.categoryId === categoryId ||
-        product.category === categorySlug ||
-        product.category === category?.slug);
+  // Filter and sort products
+  const products = useMemo(() => {
+    if (!allProducts || allProducts.length === 0) return [];
+    if (!categoryId && !categorySlug) return [];
 
-    if (!matchesCategory) return false;
-    if (selectedSubcategory === "all") return true;
-    if (selectedSubCategoryId !== undefined) return product.subCategoryId === selectedSubCategoryId;
-    return product.subcategory === selectedSubcategory;
-  });
+    let filtered = allProducts.filter((product) => {
+      // Match category by ID or slug
+      const matchesCategory = categoryId 
+        ? product.categoryId === categoryId
+        : (product.category === categorySlug || 
+           product.category === category?.slug ||
+           product.category?.toLowerCase() === categorySlug.toLowerCase());
+
+      if (!matchesCategory) return false;
+
+      // Filter by subcategory
+      if (selectedSubcategory !== "all") {
+        if (selectedSubCategoryId !== undefined) {
+          if (product.subCategoryId !== selectedSubCategoryId) return false;
+        } else {
+          const productSubcategory = product.subcategory || product.subCategoryId?.toString();
+          if (productSubcategory !== selectedSubcategory) return false;
+        }
+      }
+
+      // Filter by tag
+      if (selectedTag !== "all") {
+        let productTags: string[] = [];
+        if (product.tags) {
+          if (typeof product.tags === 'string') {
+            productTags = product.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+          } else if (Array.isArray(product.tags)) {
+            productTags = product.tags.map(t => typeof t === 'string' ? t.trim() : String(t).trim()).filter(t => t.length > 0);
+          }
+        }
+        if (productTags.length === 0 || !productTags.some(tag => tag.toLowerCase() === selectedTag.toLowerCase())) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Sort products
+    filtered = [...filtered].sort((a, b) => {
+      switch (selectedSort) {
+        case "price-low": {
+          const priceA = typeof a.price === 'string' ? parseFloat(a.price) : Number(a.price) || 0;
+          const priceB = typeof b.price === 'string' ? parseFloat(b.price) : Number(b.price) || 0;
+          return priceA - priceB;
+        }
+        case "price-high": {
+          const priceA = typeof a.price === 'string' ? parseFloat(a.price) : Number(a.price) || 0;
+          const priceB = typeof b.price === 'string' ? parseFloat(b.price) : Number(b.price) || 0;
+          return priceB - priceA;
+        }
+        case "newest":
+          return (b.newLaunch ? 1 : 0) - (a.newLaunch ? 1 : 0);
+        case "rating": {
+          const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : Number(a.rating) || 0;
+          const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : Number(b.rating) || 0;
+          return ratingB - ratingA;
+        }
+        case "popular":
+        default:
+          // Sort by bestseller first, then featured, then by rating
+          const bestsellerDiff = (b.bestseller ? 1 : 0) - (a.bestseller ? 1 : 0);
+          if (bestsellerDiff !== 0) return bestsellerDiff;
+          const featuredDiff = (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+          if (featuredDiff !== 0) return featuredDiff;
+          const ratingA = typeof a.rating === 'string' ? parseFloat(a.rating) : Number(a.rating) || 0;
+          const ratingB = typeof b.rating === 'string' ? parseFloat(b.rating) : Number(b.rating) || 0;
+          return ratingB - ratingA;
+      }
+    });
+
+    return filtered;
+  }, [allProducts, categoryId, categorySlug, category?.slug, selectedSubcategory, selectedSubCategoryId, selectedTag, selectedSort]);
+
+  // Get available tags for current category products
+  const availableTags = useMemo(() => {
+    if (!filterOptions?.tags || !products || products.length === 0) return [];
+    
+    // Get all tags from filtered products
+    const productTagsSet = new Set<string>();
+    products.forEach(product => {
+      if (product.tags) {
+        let tags: string[] = [];
+        if (typeof product.tags === 'string') {
+          tags = product.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+        } else if (Array.isArray(product.tags)) {
+          tags = product.tags.map(t => typeof t === 'string' ? t.trim() : String(t).trim()).filter(t => t.length > 0);
+        }
+        tags.forEach(tag => productTagsSet.add(tag.toLowerCase()));
+      }
+    });
+
+    // Return only tags that exist in filterOptions and in current products
+    return filterOptions.tags.filter(tag => productTagsSet.has(tag.toLowerCase()));
+  }, [filterOptions?.tags, products]);
 
   if (categoriesLoading) {
     return (
@@ -128,31 +234,40 @@ export default function CategoryPage() {
             </SelectContent>
           </Select>
 
-          <Select defaultValue="popular">
+          <Select value={selectedSort} onValueChange={setSelectedSort}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="popular">Most Popular</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="rating">Highest Rated</SelectItem>
+              {(filterOptions?.sortOptions || [
+                { value: "popular", label: "Most Popular" },
+                { value: "price-low", label: "Price: Low to High" },
+                { value: "price-high", label: "Price: High to Low" },
+                { value: "newest", label: "Newest First" },
+                { value: "rating", label: "Highest Rated" },
+              ]).map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
-          <Select defaultValue="all-skin">
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Skin Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-skin">All Skin Types</SelectItem>
-              <SelectItem value="oily">Oily Skin</SelectItem>
-              <SelectItem value="dry">Dry Skin</SelectItem>
-              <SelectItem value="sensitive">Sensitive Skin</SelectItem>
-              <SelectItem value="combination">Combination Skin</SelectItem>
-            </SelectContent>
-          </Select>
+          {availableTags.length > 0 && (
+            <Select value={selectedTag} onValueChange={setSelectedTag}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by Tag" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                {availableTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* Products Grid */}

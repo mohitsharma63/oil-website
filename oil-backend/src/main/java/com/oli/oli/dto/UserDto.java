@@ -8,6 +8,8 @@ public record UserDto(
         String lastName,
         String email,
         String phone,
+        Boolean isAdmin,
+        Boolean phoneVerified,
         Instant createdAt,
         Instant updatedAt
 ) {

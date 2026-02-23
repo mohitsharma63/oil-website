@@ -11,6 +11,7 @@ export type AuthUser = {
   name?: string;
   email?: string;
   phone?: string;
+  isAdmin?: boolean;
   [key: string]: unknown;
 };
 
@@ -46,8 +47,9 @@ function writeSession(session: AuthSession) {
 function normalizeSession(payload: unknown): AuthSession {
   const p = payload as any;
   const token = p?.token ?? p?.accessToken ?? p?.data?.token ?? p?.data?.accessToken;
+  // Handle both AuthResponse format ({message, user}) and direct user object
   const user: AuthUser | null =
-    p?.user ?? p?.data?.user ?? p?.profile ?? p?.data?.profile ?? (p && typeof p === "object" ? p : null);
+    p?.user ?? p?.data?.user ?? p?.profile ?? p?.data?.profile ?? (p && typeof p === "object" && !p.message ? p : null);
 
   if (!user || typeof user !== "object") {
     return { user: null, token: token ? String(token) : undefined, raw: payload };
@@ -116,19 +118,34 @@ export function useAuth() {
     []
   );
 
+  const adminLogin = useCallback(async (email: string, password: string) => {
+    const res = await oliRequest("POST", "/api/admin/login", { email, password });
+    const data = (await res.json()) as unknown;
+    const next = normalizeSession(data);
+    setSession(next);
+    writeSession(next);
+    return next;
+  }, []);
+
   const logout = useCallback(() => {
     const next: AuthSession = { user: null };
     setSession(next);
     writeSession(next);
   }, []);
 
+  const isAdmin = useMemo(() => {
+    return session.user?.isAdmin === true;
+  }, [session.user]);
+
   return {
     session,
     user: session.user,
     token: session.token,
     isAuthenticated,
+    isAdmin,
     displayName,
     login,
+    adminLogin,
     register,
     logout,
   };

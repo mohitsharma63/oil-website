@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.oli.oli.dto.UserDto;
+import com.oli.oli.dto.UserPageResponse;
 import com.oli.oli.model.User;
 import com.oli.oli.repository.UserRepository;
+import com.oli.oli.service.UserService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/users")
@@ -44,15 +47,45 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, UserService userService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @GetMapping
-    public List<UserDto> list() {
-        return userRepository.findAll().stream().map(UserController::toDto).toList();
+    public UserPageResponse list(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "sortOrder", defaultValue = "desc") String sortOrder
+    ) {
+        // Validate pagination parameters
+        if (page < 1) {
+            page = 1;
+        }
+        if (pageSize < 1 || pageSize > 100) {
+            pageSize = 10;
+        }
+
+        // Validate sortOrder parameter
+        String validSortOrder = sortOrder.toLowerCase();
+        if (!validSortOrder.equals("asc") && !validSortOrder.equals("desc")) {
+            validSortOrder = "desc";
+        }
+
+        String searchQuery = StringUtils.hasText(q) ? q.trim() : null;
+
+        List<User> users = userService.findBySearch(searchQuery, page, pageSize, sortBy, validSortOrder);
+        long total = userService.countBySearch(searchQuery);
+        int totalPages = (int) Math.ceil((double) total / pageSize);
+
+        List<UserDto> userDtos = users.stream().map(UserController::toDto).toList();
+
+        return new UserPageResponse(userDtos, total, page, pageSize, totalPages);
     }
 
     @GetMapping("/{id}")
@@ -172,6 +205,8 @@ public class UserController {
                 u.getLastName(),
                 u.getEmail(),
                 u.getPhone(),
+                u.getIsAdmin(),
+                u.getPhoneVerified(),
                 u.getCreatedAt(),
                 u.getUpdatedAt()
         );

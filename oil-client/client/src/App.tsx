@@ -5,19 +5,24 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/layout";
 import AdminLayout from "@/components/admin-layout";
+import AdminProtectedRoute from "@/components/admin-protected-route";
 import Home from "@/pages/home";
 import Category from "@/pages/category";
 import ProductDetail from "@/pages/product-detail";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
+import TermsConditions from "@/pages/terms-conditions";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import Login from "@/pages/auth/login";
 import Signup from "@/pages/auth/signup";
+import ForgotPassword from "@/pages/auth/forgot-password";
 import Cart from "@/pages/cart";
 import Checkout from "@/pages/checkout"; // Uncomment this line if you have a Checkout page
 // import Checkout from "@/pages/checkout"
 import Wishlist from "@/pages/wishlist";
 import OrdersHistory from "@/pages/account/orders";
 import ChangePassword from "@/pages/account/change-password";
+import SearchPage from "@/pages/search";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminProducts from "@/pages/admin/products";
 import AdminCategories from "@/pages/admin/categories";
@@ -26,50 +31,78 @@ import AdminSliders from "@/pages/admin/sliders";
 import AdminOrders from "@/pages/admin/orders";
 import AdminCustomers from "@/pages/admin/customers";
 import AdminSettings from "@/pages/admin/settings";
+import AdminTermsConditions from "@/pages/admin/terms-conditions";
+import AdminLogin from "@/pages/admin/login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
+      <Route path="/admin/login">
+        <AdminLogin />
+      </Route>
       <Route path="/admin">
-        <AdminLayout>
-          <AdminDashboard />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminDashboard />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/products">
-        <AdminLayout>
-          <AdminProducts />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminProducts />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/categories">
-        <AdminLayout>
-          <AdminCategories />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminCategories />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/subcategories">
-        <AdminLayout>
-          <AdminSubCategories />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminSubCategories />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/sliders">
-        <AdminLayout>
-          <AdminSliders />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminSliders />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/orders">
-        <AdminLayout>
-          <AdminOrders />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminOrders />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/customers">
-        <AdminLayout>
-          <AdminCustomers />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminCustomers />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
       <Route path="/admin/settings">
-        <AdminLayout>
-          <AdminSettings />
-        </AdminLayout>
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminSettings />
+          </AdminLayout>
+        </AdminProtectedRoute>
+      </Route>
+      <Route path="/admin/terms-conditions">
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminTermsConditions />
+          </AdminLayout>
+        </AdminProtectedRoute>
       </Route>
 
       <Route>
@@ -80,10 +113,14 @@ function Router() {
             <Route path="/product/:slug" component={ProductDetail} />
             <Route path="/about" component={About} />
             <Route path="/contact" component={Contact} />
+            <Route path="/terms-conditions" component={TermsConditions} />
+            <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route path="/auth/login" component={Login} />
             <Route path="/auth/signup" component={Signup} />
+            <Route path="/auth/forgot-password" component={ForgotPassword} />
             <Route path="/account/orders" component={OrdersHistory} />
             <Route path="/account/change-password" component={ChangePassword} />
+            <Route path="/search" component={SearchPage} />
             <Route path="/cart" component={Cart} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/wishlist" component={Wishlist} />

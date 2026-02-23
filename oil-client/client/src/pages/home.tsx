@@ -69,7 +69,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover our complete range of beauty and wellness products
+              Discover our complete range of RAJYADU products
             </p>
           </div>
 
@@ -170,11 +170,20 @@ export default function Home() {
           )}
 
           <div className="text-center mt-12">
-            <Link href="/category/skincare">
-              <Button variant="outline" size="lg" className="btn-secondary">
-                View All Products →
-              </Button>
-            </Link>
+            {categoriesLoading ? (
+              <Skeleton className="h-12 w-48 mx-auto" />
+            ) : (
+              <Link href={categories && categories.length > 0 ? `/category/${categories[0].slug}` : "#"}>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="btn-secondary"
+                  disabled={!categories || categories.length === 0}
+                >
+                  View All Products →
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>

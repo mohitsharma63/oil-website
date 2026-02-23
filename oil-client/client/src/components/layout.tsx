@@ -5,6 +5,9 @@ import { Search, User, ShoppingCart, Menu, Sun, Moon, ChevronDown, Heart, LogOut
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import GlobalSearch from "@/components/global-search";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   DropdownMenu,
@@ -15,18 +18,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Category, SubCategory } from "@/lib/types";
-import { sampleCategories } from "@/data/products";
 import { oliGetJson, oliUrl } from "@/lib/oliApi";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface LayoutProps {
   children: ReactNode;
 }
   
 export default function Layout({ children }: LayoutProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const { count: wishlistCount } = useWishlist();
@@ -81,9 +84,9 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-12xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center h-16">
             {/* Logo */}
-            <Link href="/">
+            <Link href="/" className="flex-shrink-0">
               <div className="flex items-center gap-3 cursor-pointer">
                 <img src="/logo.png" alt="RAJYADU" className="h-20 w-40" />
                 
@@ -91,19 +94,12 @@ export default function Layout({ children }: LayoutProps) {
             </Link>
 
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <div className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="Search for products..."
-                  className="w-full pr-10"
-                />
-                <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-              </div>
+            <div className="hidden md:flex flex-1 justify-center mx-8">
+                <GlobalSearch placeholder="Search for products, categories..." />
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -332,14 +328,7 @@ export default function Layout({ children }: LayoutProps) {
           {/* Mobile Search Bar */}
           {isSearchOpen && (
             <div className="md:hidden pb-4">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search for products..."
-                  className="w-full pr-10"
-                />
-                <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-              </div>
+              <GlobalSearch placeholder="Search for products, categories..." />
             </div>
           )}
         </div>
@@ -440,10 +429,10 @@ export default function Layout({ children }: LayoutProps) {
               </div>
            
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://www.instagram.com/rajyadu.dhudaramorganics?utm_source=qr&igsh=MW15dTZvZnN6N3c0NA==" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                   <i className="fab fa-instagram"></i>
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://www.facebook.com/share/1Dnbc5YrU9/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                   <i className="fab fa-facebook"></i>
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -474,6 +463,11 @@ export default function Layout({ children }: LayoutProps) {
                     Contact
                   </Link>
                 </li>
+                <li>
+                  <Link href="/terms-conditions" className="text-gray-400 hover:text-white transition-colors">
+                    Terms & Conditions
+                  </Link>
+                </li>
                
               </ul>
             </div>
@@ -482,13 +476,16 @@ export default function Layout({ children }: LayoutProps) {
             <div>
               <h4 className="font-semibold mb-4">Categories</h4>
               <ul className="space-y-2">
-                {(categories ?? sampleCategories).map((cat) => (
+                {categories?.map((cat) => (
                   <li key={cat.slug}>
                     <Link href={`/category/${cat.slug}`} className="text-gray-400 hover:text-white transition-colors">
                       {cat.name}
                     </Link>
                   </li>
                 ))}
+                {!categories || categories.length === 0 && (
+                  <li className="text-gray-500">Loading categories...</li>
+                )}
               </ul>
             </div>
 
@@ -496,11 +493,10 @@ export default function Layout({ children }: LayoutProps) {
             <div>
               <h4 className="font-semibold mb-4">Customer Support</h4>
               <ul className="space-y-2">
-              
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -515,6 +511,9 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </footer>
+      
+      {/* Chatbot */}
+      <Chatbot />
     </div>
   );
 }

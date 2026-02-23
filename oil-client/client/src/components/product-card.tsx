@@ -87,9 +87,12 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
 
         <Link href={`/product/${product.slug}`}>
           <img
-            src={oliAssetUrl(product.imageUrl) ?? product.imageUrl}
+            src={oliAssetUrl(product.imageUrl) || product.imageUrl || "/placeholder-product.jpg"}
             alt={product.name}
             className="product-image h-64 w-full cursor-pointer  transition-transform duration-300 group-hover:scale-[1.03]"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder-product.jpg";
+            }}
           />
         </Link>
       </div>

@@ -54,17 +54,17 @@ export default function Contact() {
     {
       icon: Mail,
       label: "Email",
-      value: "support@discoverpilgrim.com",
+      value: "dhudaramsonsorganic5358@gmail.com",
     },
     {
       icon: Phone,
       label: "Phone",
-      value: "+91 9876543210",
+      value: "8003845358",
     },
     {
       icon: MapPin,
       label: "Address",
-      value: "Mumbai, Maharashtra, India",
+      value: "Majari road, near tvs agany, khtanath gate k pass neemrana kot-bherod raj",
     },
   ];
 
@@ -75,8 +75,8 @@ export default function Contact() {
   ];
 
   const socialLinks = [
-    { icon: Instagram, href: "#", color: "hover:text-pink-500" },
-    { icon: Facebook, href: "#", color: "hover:text-blue-500" },
+    { icon: Instagram, href: "https://www.instagram.com/rajyadu.dhudaramorganics?utm_source=qr&igsh=MW15dTZvZnN6N3c0NA==", color: "hover:text-pink-500" },
+    { icon: Facebook, href: "https://www.facebook.com/share/1Dnbc5YrU9/", color: "hover:text-blue-500" },
     { icon: Youtube, href: "#", color: "hover:text-red-500" },
     { icon: Twitter, href: "#", color: "hover:text-blue-400" },
   ];

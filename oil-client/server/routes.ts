@@ -50,6 +50,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/products/filters", async (req, res) => {
+    try {
+      // Proxy to Spring Boot backend
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const response = await fetch(`${backendUrl}/api/products/filters`);
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Failed to fetch filter options" });
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching filters:", error);
+      res.status(500).json({ error: "Failed to fetch filter options" });
+    }
+  });
+
   app.get("/api/products/:slug", async (req, res) => {
     try {
       const { slug } = req.params;

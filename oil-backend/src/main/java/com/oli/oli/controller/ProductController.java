@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.oli.oli.dto.FilterOptionsDto;
 import com.oli.oli.dto.ProductDto;
 import com.oli.oli.model.Category;
 import com.oli.oli.model.Product;
@@ -25,6 +26,10 @@ import com.oli.oli.repository.CategoryRepository;
 import com.oli.oli.repository.ProductRepository;
 import com.oli.oli.repository.SubCategoryRepository;
 import com.oli.oli.service.FileStorageService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -61,6 +66,35 @@ public class ProductController {
                 .stream()
                 .map(ProductController::toDto)
                 .toList();
+    }
+
+    @GetMapping("/filters")
+    public FilterOptionsDto getFilterOptions() {
+        // Get all tags from products and split by comma
+        List<String> allTags = productRepository.findAllTags();
+        List<String> tags = allTags.stream()
+                .flatMap(tagsCsv -> {
+                    if (tagsCsv == null || tagsCsv.isEmpty()) {
+                        return java.util.stream.Stream.empty();
+                    }
+                    return Arrays.stream(tagsCsv.split(","))
+                            .map(String::trim)
+                            .filter(tag -> !tag.isEmpty());
+                })
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        List<String> sizes = productRepository.findDistinctSizes();
+
+        List<FilterOptionsDto.SortOption> sortOptions = new ArrayList<>();
+        sortOptions.add(new FilterOptionsDto.SortOption("popular", "Most Popular"));
+        sortOptions.add(new FilterOptionsDto.SortOption("price-low", "Price: Low to High"));
+        sortOptions.add(new FilterOptionsDto.SortOption("price-high", "Price: High to Low"));
+        sortOptions.add(new FilterOptionsDto.SortOption("newest", "Newest First"));
+        sortOptions.add(new FilterOptionsDto.SortOption("rating", "Highest Rated"));
+
+        return new FilterOptionsDto(tags, sizes, sortOptions);
     }
 
     @GetMapping("/{id}")
