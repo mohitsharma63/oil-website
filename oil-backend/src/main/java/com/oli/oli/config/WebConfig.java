@@ -30,7 +30,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "http://localhost:5000",
                         "http://rajyadu.in",
-                        "http://api.rajyadu.in")
+                        "https://rajyadu.in",
+                        "http://api.rajyadu.in",
+                        "https://api.rajyadu.in")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
