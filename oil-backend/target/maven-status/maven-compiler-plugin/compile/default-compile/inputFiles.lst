@@ -1,16 +1,41 @@
-D:\New folder (9)\oli\src\main\java\com\oli\oli\App.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\config\WebConfig.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\CategoryController.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\SliderController.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\controller\SubCategoryController.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\CategoryDto.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\SliderDto.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\dto\SubCategoryDto.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\exception\ApiExceptionHandler.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\model\Category.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\model\Slider.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\model\SubCategory.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\CategoryRepository.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\SliderRepository.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\repository\SubCategoryRepository.java
-D:\New folder (9)\oli\src\main\java\com\oli\oli\service\FileStorageService.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\App.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\config\PasswordConfig.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\config\WebConfig.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\AdminController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\AuthController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\CategoryController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\DashboardController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\ProductController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\SearchController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\SliderController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\SubCategoryController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\TermsAndConditionsController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\controller\UserController.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\CategoryDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\FilterOptionsDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\ProductDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\SliderDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\SubCategoryDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\TermsAndConditionsDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\UserDto.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\dto\UserPageResponse.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\exception\ApiExceptionHandler.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\Category.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\Otp.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\Product.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\Slider.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\SubCategory.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\TermsAndConditions.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\model\User.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\CategoryRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\OtpRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\ProductRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\SliderRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\SubCategoryRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\TermsAndConditionsRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\repository\UserRepository.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\service\EmailService.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\service\FileStorageService.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\service\OtpService.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\service\SmsService.java
+E:\oil-website\oil-backend\src\main\java\com\oli\oli\service\UserService.java

@@ -820,7 +820,7 @@
     "variable": [
       {
         "key": "baseUrl",
-        "value": "http://localhost:8085"
+        "value": "http://localhost:8085 "
       },
       {
         "key": "categoryId",
