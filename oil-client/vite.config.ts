@@ -35,9 +35,9 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://api.rajyadu.in',
+        target: 'http://localhost:8080',
         changeOrigin: true,
-        secure: true,
+        secure: false,
       }
     }
   },

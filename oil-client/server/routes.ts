@@ -102,6 +102,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shipping API - Proxy to Java backend
+  app.get("/api/shipping/ithink/serviceability", async (req, res) => {
+    try {
+      const { deliveryPincode, weight, cod, productMrp } = req.query;
+      const backendUrl = `http://localhost:8080/api/shipping/ithink/serviceability?deliveryPincode=${deliveryPincode}&weight=${weight}&cod=${cod}&productMrp=${productMrp}`;
+      
+      const response = await fetch(backendUrl);
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Serviceability check failed" });
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error checking serviceability:", error);
+      res.status(500).json({ error: "Failed to check serviceability" });
+    }
+  });
+
+  app.post("/api/shipping/validate-pincode", async (req, res) => {
+    try {
+      const backendUrl = "http://localhost:8080/api/shipping/validate-pincode";
+      
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body)
+      });
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Pincode validation failed" });
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error validating pincode:", error);
+      res.status(500).json({ error: "Failed to validate pincode" });
+    }
+  });
+
+  // Order endpoints
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const backendUrl = "http://localhost:8080/api/orders";
+
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body)
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Order creation failed" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const backendUrl = "http://localhost:8080/api/orders";
+
+      const response = await fetch(backendUrl);
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Failed to fetch orders" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  app.post("/api/orders/payment", async (req, res) => {
+    try {
+      const backendUrl = "http://localhost:8080/api/orders/payment";
+
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body)
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Payment processing failed" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      res.status(500).json({ error: "Failed to process payment" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

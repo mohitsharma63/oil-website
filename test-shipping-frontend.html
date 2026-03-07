@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-case { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .result { margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        input { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>IThink Logistics Shipping API Test</h1>
+    
+    <div class="test-case">
+        <h3>Manual API Test</h3>
+        <label>Pincode: <input type="text" id="pincode" value="302021" placeholder="6-digit pincode"></label><br>
+        <label>Weight (kg): <input type="number" id="weight" value="0.5" step="0.1" min="0.1"></label><br>
+        <label>COD: <input type="checkbox" id="cod"></label><br>
+        <label>Product MRP: <input type="number" id="productMrp" value="325" step="1"></label><br>
+        <button onclick="testShippingAPI()">Test Shipping API</button>
+        <div id="manualResult" class="result"></div>
+    </div>
+
+    <div class="test-case">
+        <h3>Predefined Test Cases</h3>
+        <button onclick="runPredefinedTests()">Run All Tests</button>
+        <div id="predefinedResults"></div>
+    </div>
+
+    <script>
+        async function testShippingAPI() {
+            const pincode = document.getElementById('pincode').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const cod = document.getElementById('cod').checked;
+            const productMrp = parseFloat(document.getElementById('productMrp').value);
+            const resultDiv = document.getElementById('manualResult');
+
+            if (!pincode || pincode.length !== 6) {
+                resultDiv.innerHTML = '<div class="error">Please enter a valid 6-digit pincode</div>';
+                return;
+            }
+
+            const url = `http://localhost:8080/api/shipping/ithink/serviceability?deliveryPincode=${pincode}&weight=${weight}&cod=${cod}&productMrp=${productMrp}`;
+            
+            try {
+                resultDiv.innerHTML = 'Testing...';
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>Success!</strong><br>
+                            Status: ${data.status ? 'Serviceable' : 'Not Serviceable'}<br>
+                            Shipping Charge: ₹${data.shippingCharge || 'N/A'}<br>
+                            Message: ${data.message}<br>
+                            Estimated Delivery: ${data.estimated_delivery}<br>
+                            <strong>Full Response:</strong><br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Error: ${response.status} - ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function runPredefinedTests() {
+            const testCases = [
+                { pincode: '302021', weight: 0.5, cod: false, productMrp: 325, name: 'Jaipur - Light - Prepaid' },
+                { pincode: '302021', weight: 1.5, cod: true, productMrp: 600, name: 'Jaipur - Heavy - COD' },
+                { pincode: '110001', weight: 0.3, cod: false, productMrp: 400, name: 'Delhi - Light - Prepaid' },
+                { pincode: '110001', weight: 2.5, cod: true, productMrp: 800, name: 'Delhi - Heavy - COD' },
+                { pincode: '999999', weight: 0.5, cod: false, productMrp: 200, name: 'Non-serviceable - Light' }
+            ];
+
+            const resultsDiv = document.getElementById('predefinedResults');
+            resultsDiv.innerHTML = '<p>Running tests...</p>';
+
+            let results = '';
+            for (const testCase of testCases) {
+                const url = `http://localhost:8080/api/shipping/ithink/serviceability?deliveryPincode=${testCase.pincode}&weight=${testCase.weight}&cod=${testCase.cod}&productMrp=${testCase.productMrp}`;
+                
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    results += `
+                        <div class="${response.ok ? 'success' : 'error'}">
+                            <strong>${testCase.name}</strong><br>
+                            Pincode: ${testCase.pincode}, Weight: ${testCase.weight}kg, COD: ${testCase.cod}, MRP: ₹${testCase.productMrp}<br>
+                            Status: ${data.status ? 'Serviceable' : 'Not Serviceable'}<br>
+                            Shipping: ₹${data.shippingCharge || 'N/A'}<br>
+                            Message: ${data.message}<br>
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="error">
+                            <strong>${testCase.name}</strong><br>
+                            Error: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        // Test on page load
+        window.onload = function() {
+            console.log('Page loaded. Ready to test shipping API.');
+        };
+    </script>
+</body>
+</html>

@@ -20,120 +20,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/hooks/use-orders";
 
-// Static order data
-const staticOrders: Order[] = [
-  {
-    id: "ORD-001",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 1500,
-    shipping: 100,
-    total: 1600,
-    userEmail: "john.doe@example.com",
-    name: "John Doe",
-    status: "Delivered",
-  },
-  {
-    id: "ORD-002",
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 2500,
-    shipping: 150,
-    total: 2650,
-    userEmail: "jane.smith@example.com",
-    name: "Jane Smith",
-    status: "Shipped",
-  },
-  {
-    id: "ORD-003",
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 800,
-    shipping: 100,
-    total: 900,
-    userEmail: "alice.johnson@example.com",
-    name: "Alice Johnson",
-    status: "Processing",
-  },
-  {
-    id: "ORD-004",
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 3200,
-    shipping: 200,
-    total: 3400,
-    userEmail: "bob.williams@example.com",
-    name: "Bob Williams",
-    status: "Delivered",
-  },
-  {
-    id: "ORD-005",
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 1200,
-    shipping: 100,
-    total: 1300,
-    userEmail: "charlie.brown@example.com",
-    name: "Charlie Brown",
-    status: "Pending",
-  },
-  {
-    id: "ORD-006",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 950,
-    shipping: 100,
-    total: 1050,
-    userEmail: "diana.prince@example.com",
-    name: "Diana Prince",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD-007",
-    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 1800,
-    shipping: 120,
-    total: 1920,
-    userEmail: "edward.stark@example.com",
-    name: "Edward Stark",
-    status: "Shipped",
-  },
-  {
-    id: "ORD-008",
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 600,
-    shipping: 80,
-    total: 680,
-    userEmail: "fiona.green@example.com",
-    name: "Fiona Green",
-    status: "Pending",
-  },
-  {
-    id: "ORD-009",
-    createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 2100,
-    shipping: 150,
-    total: 2250,
-    userEmail: "george.harris@example.com",
-    name: "George Harris",
-    status: "Delivered",
-  },
-  {
-    id: "ORD-010",
-    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    items: [],
-    subtotal: 1400,
-    shipping: 100,
-    total: 1500,
-    userEmail: "helen.white@example.com",
-    name: "Helen White",
-    status: "Processing",
-  },
-];
-
 const orderStatuses = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
 
 export default function AdminOrders() {
@@ -142,6 +28,29 @@ export default function AdminOrders() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch orders from backend
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('/api/orders');
+        if (response.ok) {
+          const data = await response.json();
+          // Parse the data if it's a string
+          const parsedOrders = typeof data === 'string' ? JSON.parse(data) : data;
+          setOrders(parsedOrders || []);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -154,11 +63,14 @@ export default function AdminOrders() {
 
   // Filter and sort orders
   const filteredAndSortedOrders = useMemo(() => {
-    let filtered = [...staticOrders];
+    let filtered = [...orders];
 
     // Apply status filter
     if (statusFilter !== "All") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter((order) => {
+        const orderStatus = order.status || "Pending";
+        return orderStatus.toLowerCase() === statusFilter.toLowerCase();
+      });
     }
 
     // Apply search filter
@@ -166,9 +78,8 @@ export default function AdminOrders() {
       const query = debouncedSearch.trim().toLowerCase();
       filtered = filtered.filter(
         (order) =>
-          order.id.toLowerCase().includes(query) ||
-          order.name?.toLowerCase().includes(query) ||
-          order.userEmail?.toLowerCase().includes(query)
+          order.id?.toString().toLowerCase().includes(query) ||
+          order.data?.toLowerCase().includes(query)
       );
     }
 
@@ -179,24 +90,20 @@ export default function AdminOrders() {
 
       switch (sortBy) {
         case "createdAt":
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
+          aValue = a.createdAt || 0;
+          bValue = b.createdAt || 0;
           break;
-        case "total":
-          aValue = a.total;
-          bValue = b.total;
+        case "id":
+          aValue = a.id || 0;
+          bValue = b.id || 0;
           break;
         case "status":
           aValue = a.status || "";
           bValue = b.status || "";
           break;
-        case "id":
-          aValue = a.id;
-          bValue = b.id;
-          break;
         default:
-          aValue = a.createdAt;
-          bValue = b.createdAt;
+          aValue = a.createdAt || 0;
+          bValue = b.createdAt || 0;
       }
 
       if (sortOrder === "asc") {
@@ -207,11 +114,11 @@ export default function AdminOrders() {
     });
 
     return filtered;
-  }, [debouncedSearch, statusFilter, sortBy, sortOrder]);
+  }, [orders, debouncedSearch, statusFilter, sortBy, sortOrder]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (timestamp: number) => {
     try {
-      return new Date(dateString).toLocaleDateString("en-US", {
+      return new Date(timestamp).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -219,24 +126,47 @@ export default function AdminOrders() {
         minute: "2-digit",
       });
     } catch {
-      return dateString;
+      return "Invalid Date";
     }
   };
 
   const getStatusBadgeVariant = (status?: string) => {
-    switch (status) {
-      case "Delivered":
+    switch (status?.toLowerCase()) {
+      case "delivered":
         return "default";
-      case "Shipped":
+      case "shipped":
         return "secondary";
-      case "Processing":
+      case "processing":
         return "secondary";
-      case "Pending":
+      case "pending":
         return "outline";
-      case "Cancelled":
+      case "cancelled":
         return "destructive";
+      case "confirmed":
+        return "default";
       default:
         return "outline";
+    }
+  };
+
+  const extractCustomerInfo = (orderData: string) => {
+    try {
+      const parsed = JSON.parse(orderData);
+      return {
+        email: parsed.customerInfo?.email || "N/A",
+        name: `${parsed.customerInfo?.firstName || ""} ${parsed.customerInfo?.lastName || ""}`.trim() || "N/A",
+        total: parsed.total || 0,
+        shipping: parsed.shipping || 0,
+        subtotal: parsed.subtotal || 0,
+      };
+    } catch {
+      return {
+        email: "N/A",
+        name: "N/A",
+        total: 0,
+        shipping: 0,
+        subtotal: 0,
+      };
     }
   };
 
@@ -328,35 +258,44 @@ export default function AdminOrders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedOrders.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                      Loading orders...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredAndSortedOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-muted-foreground">
                       No orders found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAndSortedOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{order.name || "-"}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {order.userEmail || "-"}
-                      </TableCell>
-                      <TableCell>₹{order.subtotal.toLocaleString()}</TableCell>
-                      <TableCell>₹{order.shipping.toLocaleString()}</TableCell>
-                      <TableCell className="font-semibold">
-                        ₹{order.total.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(order.status)}>
-                          {order.status || "Pending"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDate(order.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredAndSortedOrders.map((order) => {
+                    const customerInfo = extractCustomerInfo(order.data || "{}");
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id}</TableCell>
+                        <TableCell>{customerInfo.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {customerInfo.email}
+                        </TableCell>
+                        <TableCell>₹{customerInfo.subtotal.toLocaleString()}</TableCell>
+                        <TableCell>₹{customerInfo.shipping.toLocaleString()}</TableCell>
+                        <TableCell className="font-semibold">
+                          ₹{customerInfo.total.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusBadgeVariant(order.status)}>
+                            {order.status || "Pending"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatDate(order.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

@@ -16,6 +16,7 @@ export type Order = {
   userEmail?: string;
   name?: string;
   status?: string;
+  paymentMethod?: string;
 };
 
 function readOrders(): Order[] {
