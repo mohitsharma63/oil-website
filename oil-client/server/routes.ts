@@ -3,6 +3,163 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/api/ithink/serviceability", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const qp = new URLSearchParams();
+      for (const [k, v] of Object.entries(req.query)) {
+        if (v == null) continue;
+        if (Array.isArray(v)) {
+          v.forEach((x) => {
+            if (x != null) qp.append(k, String(x));
+          });
+        } else {
+          qp.set(k, String(v));
+        }
+      }
+
+      const response = await fetch(`${backendUrl}/api/ithink/serviceability?${qp.toString()}`);
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error fetching serviceability:", error);
+      res.status(500).json({ error: "Failed to fetch serviceability" });
+    }
+  });
+
+  app.post("/api/payments/cashfree/create-order", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const response = await fetch(`${backendUrl}/api/payments/cashfree/create-order`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error creating Cashfree order:", error);
+      res.status(500).json({ error: "Failed to create Cashfree order" });
+    }
+  });
+
+  app.get("/api/payments/cashfree/orders/:orderId", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const { orderId } = req.params;
+      const response = await fetch(`${backendUrl}/api/payments/cashfree/orders/${encodeURIComponent(orderId)}`);
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error fetching Cashfree order:", error);
+      res.status(500).json({ error: "Failed to fetch Cashfree order" });
+    }
+  });
+
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const response = await fetch(`${backendUrl}/api/orders`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const qp = new URLSearchParams();
+      for (const [k, v] of Object.entries(req.query)) {
+        if (v == null) continue;
+        if (Array.isArray(v)) {
+          v.forEach((x) => {
+            if (x != null) qp.append(k, String(x));
+          });
+        } else {
+          qp.set(k, String(v));
+        }
+      }
+      const url = qp.toString() ? `${backendUrl}/api/orders?${qp.toString()}` : `${backendUrl}/api/orders`;
+      const response = await fetch(url);
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const { id } = req.params;
+      const response = await fetch(`${backendUrl}/api/orders/${encodeURIComponent(id)}`);
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ error: "Failed to fetch order" });
+    }
+  });
+
+  app.get("/api/admin/orders", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const response = await fetch(`${backendUrl}/api/admin/orders`);
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error fetching admin orders:", error);
+      res.status(500).json({ error: "Failed to fetch admin orders" });
+    }
+  });
+
+  app.patch("/api/admin/orders/:id", async (req, res) => {
+    try {
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const { id } = req.params;
+      const response = await fetch(`${backendUrl}/api/admin/orders/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      const text = await response.text();
+      res.status(response.status);
+      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
+      res.send(text);
+    } catch (error) {
+      console.error("Error updating admin order:", error);
+      res.status(500).json({ error: "Failed to update admin order" });
+    }
+  });
+
   // Products API
   app.get("/api/products", async (req, res) => {
     try {
@@ -53,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/filters", async (req, res) => {
     try {
       // Proxy to Spring Boot backend
-      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085 ";
+      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
       const response = await fetch(`${backendUrl}/api/products/filters`);
       if (!response.ok) {
         return res.status(response.status).json({ error: "Failed to fetch filter options" });
@@ -99,116 +256,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(category);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch category" });
-    }
-  });
-
-  // Shipping API - Proxy to Java backend
-  app.get("/api/shipping/ithink/serviceability", async (req, res) => {
-    try {
-      const { deliveryPincode, weight, cod, productMrp } = req.query;
-      const backendUrl = `http://localhost:8080/api/shipping/ithink/serviceability?deliveryPincode=${deliveryPincode}&weight=${weight}&cod=${cod}&productMrp=${productMrp}`;
-      
-      const response = await fetch(backendUrl);
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Serviceability check failed" });
-      }
-      
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error("Error checking serviceability:", error);
-      res.status(500).json({ error: "Failed to check serviceability" });
-    }
-  });
-
-  app.post("/api/shipping/validate-pincode", async (req, res) => {
-    try {
-      const backendUrl = "http://localhost:8080/api/shipping/validate-pincode";
-      
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req.body)
-      });
-      
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Pincode validation failed" });
-      }
-      
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error("Error validating pincode:", error);
-      res.status(500).json({ error: "Failed to validate pincode" });
-    }
-  });
-
-  // Order endpoints
-  app.post("/api/orders", async (req, res) => {
-    try {
-      const backendUrl = "http://localhost:8080/api/orders";
-
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req.body)
-      });
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Order creation failed" });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error("Error creating order:", error);
-      res.status(500).json({ error: "Failed to create order" });
-    }
-  });
-
-  app.get("/api/orders", async (req, res) => {
-    try {
-      const backendUrl = "http://localhost:8080/api/orders";
-
-      const response = await fetch(backendUrl);
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Failed to fetch orders" });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      res.status(500).json({ error: "Failed to fetch orders" });
-    }
-  });
-
-  app.post("/api/orders/payment", async (req, res) => {
-    try {
-      const backendUrl = "http://localhost:8080/api/orders/payment";
-
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req.body)
-      });
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Payment processing failed" });
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error("Error processing payment:", error);
-      res.status(500).json({ error: "Failed to process payment" });
     }
   });
 

@@ -18,9 +18,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Order } from "@/hooks/use-orders";
+import { useQuery } from "@tanstack/react-query";
+import { oliUrl } from "@/lib/oliApi";
+
+type AdminOrderDto = {
+  id: string;
+  createdAt?: string;
+  customerName?: string;
+  customerEmail?: string;
+  subtotal?: number;
+  shipping?: number;
+  total?: number;
+  status?: string;
+  paymentStatus?: string;
+  deliveryProvider?: string;
+  trackingId?: string;
+  trackingUrl?: string;
+};
 
 const orderStatuses = ["All", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+const deliveryProviders = ["None", "IThink", "Manual"];
 
 export default function AdminOrders() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,29 +45,50 @@ export default function AdminOrders() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch orders from backend
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch('/api/orders');
-        if (response.ok) {
-          const data = await response.json();
-          // Parse the data if it's a string
-          const parsedOrders = typeof data === 'string' ? JSON.parse(data) : data;
-          setOrders(parsedOrders || []);
-        }
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: orders = [], isLoading, refetch } = useQuery<AdminOrderDto[]>({
+    queryKey: [oliUrl("/api/admin/orders")],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/orders");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.message || json?.error || "Failed to fetch orders");
+      return json as AdminOrderDto[];
+    },
+  });
 
-    fetchOrders();
-  }, []);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [editStatus, setEditStatus] = useState<Record<string, string>>({});
+  const [editDelivery, setEditDelivery] = useState<Record<string, string>>({});
+  const [editTrackingId, setEditTrackingId] = useState<Record<string, string>>({});
+  const [editTrackingUrl, setEditTrackingUrl] = useState<Record<string, string>>({});
+
+  const saveRow = async (order: AdminOrderDto) => {
+    const id = order.id;
+    const status = editStatus[id] ?? order.status ?? "Pending";
+    const deliveryProviderRaw = editDelivery[id] ?? order.deliveryProvider ?? "";
+    const deliveryProvider = deliveryProviderRaw === "None" ? "" : deliveryProviderRaw;
+    const trackingId = editTrackingId[id] ?? order.trackingId ?? "";
+    const trackingUrl = editTrackingUrl[id] ?? order.trackingUrl ?? "";
+
+    try {
+      setSavingId(id);
+      const res = await fetch(`/api/admin/orders/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          status,
+          deliveryProvider,
+          trackingId,
+          trackingUrl,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.message || json?.error || "Failed to update order");
+      await refetch();
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   // Debounce search query
   useEffect(() => {
@@ -67,10 +105,7 @@ export default function AdminOrders() {
 
     // Apply status filter
     if (statusFilter !== "All") {
-      filtered = filtered.filter((order) => {
-        const orderStatus = order.status || "Pending";
-        return orderStatus.toLowerCase() === statusFilter.toLowerCase();
-      });
+      filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
     // Apply search filter
@@ -78,8 +113,9 @@ export default function AdminOrders() {
       const query = debouncedSearch.trim().toLowerCase();
       filtered = filtered.filter(
         (order) =>
-          order.id?.toString().toLowerCase().includes(query) ||
-          order.data?.toLowerCase().includes(query)
+          order.id.toLowerCase().includes(query) ||
+          order.customerName?.toLowerCase().includes(query) ||
+          order.customerEmail?.toLowerCase().includes(query)
       );
     }
 
@@ -90,20 +126,24 @@ export default function AdminOrders() {
 
       switch (sortBy) {
         case "createdAt":
-          aValue = a.createdAt || 0;
-          bValue = b.createdAt || 0;
+          aValue = new Date(a.createdAt ?? Date.now()).getTime();
+          bValue = new Date(b.createdAt ?? Date.now()).getTime();
           break;
-        case "id":
-          aValue = a.id || 0;
-          bValue = b.id || 0;
+        case "total":
+          aValue = a.total ?? 0;
+          bValue = b.total ?? 0;
           break;
         case "status":
           aValue = a.status || "";
           bValue = b.status || "";
           break;
+        case "id":
+          aValue = a.id;
+          bValue = b.id;
+          break;
         default:
-          aValue = a.createdAt || 0;
-          bValue = b.createdAt || 0;
+          aValue = a.createdAt;
+          bValue = b.createdAt;
       }
 
       if (sortOrder === "asc") {
@@ -114,11 +154,11 @@ export default function AdminOrders() {
     });
 
     return filtered;
-  }, [orders, debouncedSearch, statusFilter, sortBy, sortOrder]);
+  }, [debouncedSearch, statusFilter, sortBy, sortOrder, orders]);
 
-  const formatDate = (timestamp: number) => {
+  const formatDate = (dateString?: string) => {
     try {
-      return new Date(timestamp).toLocaleDateString("en-US", {
+      return new Date(dateString ?? Date.now()).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -126,47 +166,24 @@ export default function AdminOrders() {
         minute: "2-digit",
       });
     } catch {
-      return "Invalid Date";
+      return dateString || "";
     }
   };
 
   const getStatusBadgeVariant = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case "delivered":
+    switch (status) {
+      case "Delivered":
         return "default";
-      case "shipped":
+      case "Shipped":
         return "secondary";
-      case "processing":
+      case "Processing":
         return "secondary";
-      case "pending":
+      case "Pending":
         return "outline";
-      case "cancelled":
+      case "Cancelled":
         return "destructive";
-      case "confirmed":
-        return "default";
       default:
         return "outline";
-    }
-  };
-
-  const extractCustomerInfo = (orderData: string) => {
-    try {
-      const parsed = JSON.parse(orderData);
-      return {
-        email: parsed.customerInfo?.email || "N/A",
-        name: `${parsed.customerInfo?.firstName || ""} ${parsed.customerInfo?.lastName || ""}`.trim() || "N/A",
-        total: parsed.total || 0,
-        shipping: parsed.shipping || 0,
-        subtotal: parsed.subtotal || 0,
-      };
-    } catch {
-      return {
-        email: "N/A",
-        name: "N/A",
-        total: 0,
-        shipping: 0,
-        subtotal: 0,
-      };
     }
   };
 
@@ -243,59 +260,147 @@ export default function AdminOrders() {
           <CardTitle>All Orders ({filteredAndSortedOrders.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Table className="min-w-[1200px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Subtotal</TableHead>
-                  <TableHead>Shipping</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="whitespace-nowrap w-[150px]">Order ID</TableHead>
+                  <TableHead className="whitespace-nowrap w-[160px]">Customer</TableHead>
+                  <TableHead className="whitespace-nowrap w-[220px]">Email</TableHead>
+                  <TableHead className="whitespace-nowrap w-[120px]">Subtotal</TableHead>
+                  <TableHead className="whitespace-nowrap w-[120px]">Shipping</TableHead>
+                  <TableHead className="whitespace-nowrap w-[120px]">Total</TableHead>
+                  <TableHead className="whitespace-nowrap w-[200px]">Status</TableHead>
+                  <TableHead className="whitespace-nowrap w-[160px]">Delivery</TableHead>
+                  <TableHead className="whitespace-nowrap w-[280px]">Tracking</TableHead>
+                  <TableHead className="whitespace-nowrap w-[180px]">Date</TableHead>
+                  <TableHead className="whitespace-nowrap text-right w-[280px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading ? (
+                {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
-                      Loading orders...
+                    <TableCell colSpan={11} className="text-center text-muted-foreground">
+                      Loading…
                     </TableCell>
                   </TableRow>
                 ) : filteredAndSortedOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center text-muted-foreground">
                       No orders found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAndSortedOrders.map((order) => {
-                    const customerInfo = extractCustomerInfo(order.data || "{}");
-                    return (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">#{order.id}</TableCell>
-                        <TableCell>{customerInfo.name}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {customerInfo.email}
-                        </TableCell>
-                        <TableCell>₹{customerInfo.subtotal.toLocaleString()}</TableCell>
-                        <TableCell>₹{customerInfo.shipping.toLocaleString()}</TableCell>
-                        <TableCell className="font-semibold">
-                          ₹{customerInfo.total.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
+                  filteredAndSortedOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium whitespace-nowrap align-top">{order.id}</TableCell>
+                      <TableCell className="whitespace-nowrap align-top">{order.customerName || "-"}</TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap align-top">{order.customerEmail || "-"}</TableCell>
+                      <TableCell className="whitespace-nowrap align-top">₹{(order.subtotal ?? 0).toLocaleString()}</TableCell>
+                      <TableCell className="whitespace-nowrap align-top">₹{(order.shipping ?? 0).toLocaleString()}</TableCell>
+                      <TableCell className="font-semibold whitespace-nowrap align-top">
+                        ₹{(order.total ?? 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <div className="space-y-2">
                           <Badge variant={getStatusBadgeVariant(order.status)}>
                             {order.status || "Pending"}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatDate(order.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                          <Select
+                            value={editStatus[order.id] ?? (order.status || "Pending")}
+                            onValueChange={(v) => setEditStatus((p) => ({ ...p, [order.id]: v }))}
+                          >
+                            <SelectTrigger className="h-8 w-[160px]">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {orderStatuses
+                                .filter((s) => s !== "All")
+                                .map((s) => (
+                                  <SelectItem key={s} value={s}>
+                                    {s}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Select
+                          value={editDelivery[order.id] ?? (order.deliveryProvider ? String(order.deliveryProvider) : "None")}
+                          onValueChange={(v) => setEditDelivery((p) => ({ ...p, [order.id]: v }))}
+                        >
+                          <SelectTrigger className="h-8 w-[140px]">
+                            <SelectValue placeholder="Delivery" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {deliveryProviders.map((p) => (
+                              <SelectItem key={p} value={p}>
+                                {p}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <div className="space-y-2 w-[260px]">
+                          <Input
+                            value={editTrackingId[order.id] ?? order.trackingId ?? ""}
+                            onChange={(e) => setEditTrackingId((p) => ({ ...p, [order.id]: e.target.value }))}
+                            placeholder="Tracking ID"
+                            className="h-8"
+                          />
+                          <Input
+                            value={editTrackingUrl[order.id] ?? order.trackingUrl ?? ""}
+                            onChange={(e) => setEditTrackingUrl((p) => ({ ...p, [order.id]: e.target.value }))}
+                            placeholder="Tracking URL"
+                            className="h-8"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground align-top">
+                        {formatDate(order.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right align-top">
+                        <div className="flex justify-end flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/account/orders/${encodeURIComponent(order.id)}`, "_blank")}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/account/orders/${encodeURIComponent(order.id)}/track`, "_blank")}
+                          >
+                            Track
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              window.open(
+                                `/account/orders/${encodeURIComponent(order.id)}/invoice?download=1`,
+                                "_blank"
+                              )
+                            }
+                          >
+                            Invoice
+                          </Button>
+                          <Button
+                            className="btn-primary"
+                            size="sm"
+                            disabled={savingId === order.id}
+                            onClick={() => saveRow(order)}
+                          >
+                            {savingId === order.id ? "Saving…" : "Save"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>

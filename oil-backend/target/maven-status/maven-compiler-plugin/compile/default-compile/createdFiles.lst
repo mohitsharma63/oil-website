@@ -51,6 +51,7 @@ com\oli\oli\model\SubCategory.class
 com\oli\oli\controller\AuthController$AuthResponse.class
 com\oli\oli\controller\AuthController$ResetPasswordRequest.class
 com\oli\oli\service\EmailService.class
+com\oli\oli\controller\IThinkController.class
 com\oli\oli\controller\AuthController$SendOtpRequest.class
 com\oli\oli\model\Otp.class
 com\oli\oli\controller\CategoryController.class
@@ -59,3 +60,4 @@ com\oli\oli\controller\AuthController$LoginRequest.class
 com\oli\oli\dto\FilterOptionsDto$SortOption.class
 com\oli\oli\repository\OtpRepository.class
 com\oli\oli\controller\AdminController$AdminLoginRequest.class
+com\oli\oli\controller\IThinkController$ServiceabilityResponse.class
