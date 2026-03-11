@@ -599,7 +599,7 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/products/filters", async (req, res) => {
     try {
-      const backendUrl = process.env.OLI_API_BASE_URL || "http://localhost:8085";
+      const backendUrl = process.env.OLI_API_BASE_URL || "https://rajyadu.in";
       const response = await fetch(`${backendUrl}/api/products/filters`);
       if (!response.ok) {
         return res.status(response.status).json({ error: "Failed to fetch filter options" });

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.oli.oli.model.OrderEntity;
 import com.oli.oli.model.OrderItemEntity;
@@ -57,6 +60,11 @@ public class IThinkController {
 
     @Value("${logistic.default.service-type:ground}")
     private String defaultServiceType;
+
+    // Optional proxy: if set, /api/ithink/serviceability will forward to this upstream
+    // Example: https://api.rajyadu.in
+    @Value("${ithink.serviceability.proxy-base-url:}")
+    private String serviceabilityProxyBaseUrl;
 
     public IThinkController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -235,11 +243,34 @@ public class IThinkController {
     }
 
     @GetMapping("/serviceability")
-    public ResponseEntity<ServiceabilityResponse> serviceability(
+    public ResponseEntity<?> serviceability(
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam("deliveryPincode") String deliveryPincode,
             @RequestParam(value = "weight", defaultValue = "0.5") BigDecimal weightKg,
             @RequestParam(value = "cod", defaultValue = "false") boolean cod,
             @RequestParam(value = "productMrp", defaultValue = "0") BigDecimal productMrp) {
+
+        // If proxy is configured, forward request upstream and pass-through body/content-type.
+        if (serviceabilityProxyBaseUrl != null && !serviceabilityProxyBaseUrl.isBlank()) {
+            String upstreamBase = normalizeBaseUrl(serviceabilityProxyBaseUrl);
+            String upstreamUrl = UriComponentsBuilder
+                    .fromHttpUrl(upstreamBase + "/api/ithink/serviceability")
+                    .queryParams(allParams)
+                    .build(true)
+                    .toUriString();
+
+            try {
+                log.info("IThink serviceability proxy call to upstreamUrl={}", upstreamUrl);
+                ResponseEntity<String> upstreamResp = restTemplate.exchange(upstreamUrl, HttpMethod.GET, HttpEntity.EMPTY, String.class);
+                HttpHeaders headers = new HttpHeaders();
+                MediaType ct = upstreamResp.getHeaders().getContentType();
+                headers.setContentType(ct != null ? ct : MediaType.APPLICATION_JSON);
+                return new ResponseEntity(upstreamResp.getBody(), headers, upstreamResp.getStatusCode());
+            } catch (RestClientException ex) {
+                log.error("IThink serviceability proxy error upstreamUrl={}", upstreamUrl, ex);
+                return ResponseEntity.ok(new ServiceabilityResponse(false, BigDecimal.ZERO, "Failed to fetch serviceability", ex.getMessage()));
+            }
+        }
 
         if (deliveryPincode == null || !deliveryPincode.matches("^[1-9]\\d{5}$")) {
             throw new IllegalArgumentException("Invalid deliveryPincode");

@@ -3,33 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.get("/api/ithink/serviceability", async (req, res) => {
-    try {
-      const backendUrl = process.env.OLI_API_BASE_URL || "https://api.rajyadu.in";
-      console.log("Serviceability API call to:", backendUrl); // Debug log
-      const qp = new URLSearchParams();
-      for (const [k, v] of Object.entries(req.query)) {
-        if (v == null) continue;
-        if (Array.isArray(v)) {
-          v.forEach((x) => {
-            if (x != null) qp.append(k, String(x));
-          });
-        } else {
-          qp.set(k, String(v));
-        }
-      }
-
-      const response = await fetch(`${backendUrl}/api/ithink/serviceability?${qp.toString()}`);
-      const text = await response.text();
-      res.status(response.status);
-      res.setHeader("content-type", response.headers.get("content-type") || "application/json");
-      res.send(text);
-    } catch (error) {
-      console.error("Error fetching serviceability:", error);
-      res.status(500).json({ error: "Failed to fetch serviceability" });
-    }
-  });
-
   app.post("/api/payments/cashfree/create-order", async (req, res) => {
     try {
       const backendUrl = process.env.OLI_API_BASE_URL || "https://api.rajyadu.in";

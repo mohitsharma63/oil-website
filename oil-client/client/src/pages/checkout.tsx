@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/hooks/use-cart";
 import { useOrders } from "@/hooks/use-orders";
 import { useAuth } from "@/hooks/use-auth";
-import { oliAssetUrl } from "@/lib/oliApi";
+import { oliAssetUrl, oliUrl } from "@/lib/oliApi";
 
 declare const Cashfree: any;
 
@@ -147,7 +147,7 @@ export default function Checkout() {
       productMrp: String(subtotal),
     });
 
-    fetch(`/api/ithink/serviceability?${qp.toString()}`, { signal: controller.signal })
+    fetch(oliUrl(`/api/ithink/serviceability?${qp.toString()}`), { signal: controller.signal })
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) throw new Error(data?.message || data?.error || "Failed to fetch shipping");
