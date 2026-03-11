@@ -6,6 +6,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ithink/serviceability", async (req, res) => {
     try {
       const backendUrl = process.env.OLI_API_BASE_URL || "https://api.rajyadu.in";
+      console.log("Serviceability API call to:", backendUrl); // Debug log
       const qp = new URLSearchParams();
       for (const [k, v] of Object.entries(req.query)) {
         if (v == null) continue;
