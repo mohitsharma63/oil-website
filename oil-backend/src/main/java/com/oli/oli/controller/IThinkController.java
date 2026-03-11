@@ -242,35 +242,11 @@ public class IThinkController {
             String message, Object raw) {
     }
 
-    @GetMapping("/serviceability")
-    public ResponseEntity<?> serviceability(
-            @RequestParam MultiValueMap<String, String> allParams,
-            @RequestParam("deliveryPincode") String deliveryPincode,
-            @RequestParam(value = "weight", defaultValue = "0.5") BigDecimal weightKg,
-            @RequestParam(value = "cod", defaultValue = "false") boolean cod,
-            @RequestParam(value = "productMrp", defaultValue = "0") BigDecimal productMrp) {
-
-        // If proxy is configured, forward request upstream and pass-through body/content-type.
-        if (serviceabilityProxyBaseUrl != null && !serviceabilityProxyBaseUrl.isBlank()) {
-            String upstreamBase = normalizeBaseUrl(serviceabilityProxyBaseUrl);
-            String upstreamUrl = UriComponentsBuilder
-                    .fromHttpUrl(upstreamBase + "/api/ithink/serviceability")
-                    .queryParams(allParams)
-                    .build(true)
-                    .toUriString();
-
-            try {
-                log.info("IThink serviceability proxy call to upstreamUrl={}", upstreamUrl);
-                ResponseEntity<String> upstreamResp = restTemplate.exchange(upstreamUrl, HttpMethod.GET, HttpEntity.EMPTY, String.class);
-                HttpHeaders headers = new HttpHeaders();
-                MediaType ct = upstreamResp.getHeaders().getContentType();
-                headers.setContentType(ct != null ? ct : MediaType.APPLICATION_JSON);
-                return new ResponseEntity(upstreamResp.getBody(), headers, upstreamResp.getStatusCode());
-            } catch (RestClientException ex) {
-                log.error("IThink serviceability proxy error upstreamUrl={}", upstreamUrl, ex);
-                return ResponseEntity.ok(new ServiceabilityResponse(false, BigDecimal.ZERO, "Failed to fetch serviceability", ex.getMessage()));
-            }
-        }
+    public ResponseEntity<ServiceabilityResponse> serviceability(
+            String deliveryPincode,
+            BigDecimal weightKg,
+            boolean cod,
+            BigDecimal productMrp) {
 
         if (deliveryPincode == null || !deliveryPincode.matches("^[1-9]\\d{5}$")) {
             throw new IllegalArgumentException("Invalid deliveryPincode");
@@ -331,6 +307,39 @@ public class IThinkController {
             log.error("IThink serviceability error toPincode={}", deliveryPincode, ex);
             return ResponseEntity.ok(new ServiceabilityResponse(false, BigDecimal.ZERO, "Failed to fetch rate", ex.getMessage()));
         }
+    }
+
+    @GetMapping("/serviceability")
+    public ResponseEntity<?> serviceability(
+            @RequestParam MultiValueMap<String, String> allParams,
+            @RequestParam("deliveryPincode") String deliveryPincode,
+            @RequestParam(value = "weight", defaultValue = "0.5") BigDecimal weightKg,
+            @RequestParam(value = "cod", defaultValue = "false") boolean cod,
+            @RequestParam(value = "productMrp", defaultValue = "0") BigDecimal productMrp) {
+
+        // If proxy is configured, forward request upstream and pass-through body/content-type.
+        if (serviceabilityProxyBaseUrl != null && !serviceabilityProxyBaseUrl.isBlank()) {
+            String upstreamBase = normalizeBaseUrl(serviceabilityProxyBaseUrl);
+            String upstreamUrl = UriComponentsBuilder
+                    .fromHttpUrl(upstreamBase + "/api/ithink/serviceability")
+                    .queryParams(allParams)
+                    .build(true)
+                    .toUriString();
+
+            try {
+                log.info("IThink serviceability proxy call to upstreamUrl={}", upstreamUrl);
+                ResponseEntity<String> upstreamResp = restTemplate.exchange(upstreamUrl, HttpMethod.GET, HttpEntity.EMPTY, String.class);
+                HttpHeaders headers = new HttpHeaders();
+                MediaType ct = upstreamResp.getHeaders().getContentType();
+                headers.setContentType(ct != null ? ct : MediaType.APPLICATION_JSON);
+                return new ResponseEntity(upstreamResp.getBody(), headers, upstreamResp.getStatusCode());
+            } catch (RestClientException ex) {
+                log.error("IThink serviceability proxy error upstreamUrl={}", upstreamUrl, ex);
+                return ResponseEntity.ok(new ServiceabilityResponse(false, BigDecimal.ZERO, "Failed to fetch serviceability", ex.getMessage()));
+            }
+        }
+
+        return serviceability(deliveryPincode, weightKg, cod, productMrp);
     }
 
     private static String normalizeBaseUrl(String baseUrl) {
