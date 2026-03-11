@@ -33,5 +33,12 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    proxy: {
+      "/api": {
+        target: "https://api.rajyadu.in",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
 });

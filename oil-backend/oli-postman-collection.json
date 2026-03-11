@@ -820,7 +820,7 @@
     "variable": [
       {
         "key": "baseUrl",
-        "value": "https://rajyadu.in"
+        "value": "https://api.rajyadu.in"
       },
       {
         "key": "categoryId",

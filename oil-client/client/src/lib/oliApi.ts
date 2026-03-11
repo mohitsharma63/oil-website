@@ -1,5 +1,5 @@
 export const OLI_API_BASE_URL =
-  import.meta.env.VITE_OLI_API_BASE_URL ?? "https://rajyadu.in";
+  import.meta.env.VITE_OLI_API_BASE_URL ?? "https://api.rajyadu.in";
 
 export function oliUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
