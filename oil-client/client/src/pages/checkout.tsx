@@ -637,7 +637,7 @@ export default function Checkout() {
                       <img
                         src={oliAssetUrl(item.product.imageUrl) ?? item.product.imageUrl}
                         alt={item.product.name}
-                        className="h-12 w-12 object-cover rounded"
+                        className="h-12 w-12  rounded"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">

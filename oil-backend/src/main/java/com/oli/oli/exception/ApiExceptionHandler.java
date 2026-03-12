@@ -24,6 +24,12 @@ public class ApiExceptionHandler {
         return new ErrorResponse(ex.getMessage(), Instant.now());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIllegalStateException(IllegalStateException ex) {
+        return new ErrorResponse(ex.getMessage(), Instant.now());
+    }
+
     @ExceptionHandler(DataAccessException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleDataAccessException(DataAccessException ex) {

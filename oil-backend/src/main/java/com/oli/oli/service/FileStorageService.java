@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileStorageService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("png", "jpg", "jpeg", "webp", "gif");
+    private static final Set<String> ALLOWED_DOCUMENT_EXTENSIONS = Set.of("pdf");
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -49,7 +50,40 @@ public class FileStorageService {
                 Files.copy(inputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
+            throw new IllegalStateException("Failed to store file. Check server permissions and app.upload.dir", e);
+        }
+
+        return "/uploads/" + subDir + "/" + filename;
+    }
+
+    public String storeDocument(MultipartFile file, String subDir) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
+        String ext = getExtension(originalFilename);
+        if (ext.isBlank() || !ALLOWED_DOCUMENT_EXTENSIONS.contains(ext.toLowerCase(Locale.ROOT))) {
+            throw new IllegalArgumentException("Unsupported file type");
+        }
+
+        String filename = UUID.randomUUID() + "." + ext;
+
+        Path baseDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path targetDir = baseDir.resolve(subDir).normalize();
+        Path targetFile = targetDir.resolve(filename).normalize();
+
+        if (!targetFile.startsWith(baseDir)) {
+            throw new IllegalArgumentException("Invalid upload path");
+        }
+
+        try {
+            Files.createDirectories(targetDir);
+            try (var inputStream = file.getInputStream()) {
+                Files.copy(inputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to store file. Check server permissions and app.upload.dir", e);
         }
 
         return "/uploads/" + subDir + "/" + filename;

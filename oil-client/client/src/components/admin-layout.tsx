@@ -1,8 +1,10 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
+  BarChart3,
   Tags,
   Package,
+  FileText,
   ShoppingBag,
   Users,
   Settings,
@@ -74,10 +76,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const navItems = [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { title: "Reports", href: "/admin/reports", icon: BarChart3 },
     { title: "Products", href: "/admin/products", icon: Package },
     { title: "Categories", href: "/admin/categories", icon: Tags },
     { title: "Sub Categories", href: "/admin/subcategories", icon: Tags },
     { title: "Sliders", href: "/admin/sliders", icon: Images },
+    { title: "Certificates", href: "/admin/certificates", icon: FileText },
     { title: "Orders", href: "/admin/orders", icon: ShoppingBag },
     { title: "Customers", href: "/admin/customers", icon: Users },
     { title: "Settings", href: "/admin/settings", icon: Settings },
@@ -178,7 +182,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </DropdownMenu>
           )}
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-x-hidden">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

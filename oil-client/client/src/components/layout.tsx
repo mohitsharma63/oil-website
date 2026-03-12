@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Search, User, ShoppingCart, Menu, Sun, Moon, ChevronDown, Heart, LogOut, KeyRound, Package } from "lucide-react";
+import { Search, User, ShoppingCart, Menu, Sun, Moon, ChevronDown, Heart, LogOut, KeyRound, Package, Home as HomeIcon, LayoutGrid, Info, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -35,6 +35,15 @@ export default function Layout({ children }: LayoutProps) {
   const { count: wishlistCount } = useWishlist();
   const { count: cartCount } = useCart();
   const { isAuthenticated, displayName, logout } = useAuth();
+
+  const isEmbed = useMemo(() => {
+    try {
+      const u = new URL(window.location.href);
+      return u.searchParams.get("embed") === "1";
+    } catch {
+      return false;
+    }
+  }, [location]);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -82,8 +91,9 @@ export default function Layout({ children }: LayoutProps) {
     
 
       {/* Main Header */}
+      {!isEmbed ? (
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-12xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
@@ -100,15 +110,6 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Right Icons */}
             <div className="flex items-center space-x-4 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-                onClick={() => setIsDark((v) => !v)}
-              >
-                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </Button>
-
               {/* Search Toggle - Mobile */}
               <Button
                 variant="ghost"
@@ -119,61 +120,63 @@ export default function Layout({ children }: LayoutProps) {
                 <Search className="h-5 w-5" />
               </Button>
 
-              {isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" aria-label="Account">
+              <div className="hidden md:flex items-center space-x-4">
+                {isAuthenticated ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" aria-label="Account">
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel className="truncate">{displayName || "Account"}</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link href="/account/orders" className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          Orders
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link href="/account/change-password" className="flex items-center gap-2">
+                          <KeyRound className="h-4 w-4" />
+                          Change Password
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="cursor-pointer text-red-600 focus:text-red-600"
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          logout();
+                        }}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link href="/auth/login">
+                    <Button variant="ghost" size="sm" aria-label="Login">
                       <User className="h-5 w-5" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="truncate">{displayName || "Account"}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/account/orders" className="flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        Orders
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/account/change-password" className="flex items-center gap-2">
-                        <KeyRound className="h-4 w-4" />
-                        Change Password
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer text-red-600 focus:text-red-600"
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        logout();
-                      }}
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/auth/login">
-                  <Button variant="ghost" size="sm" aria-label="Login">
-                    <User className="h-5 w-5" />
+                  </Link>
+                )}
+
+                <Link href="/wishlist">
+                  <Button variant="ghost" size="sm" className="relative" aria-label="Wishlist">
+                    <Heart className="h-5 w-5" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
                   </Button>
                 </Link>
-              )}
+              </div>
 
-              <Link href="/wishlist">
-                <Button variant="ghost" size="sm" className="relative" aria-label="Wishlist">
-                  <Heart className="h-5 w-5" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-
-              <Link href="/cart">
+              <Link href="/cart" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="relative">
                   <ShoppingCart className="h-5 w-5" />
                   {cartCount > 0 && (
@@ -191,17 +194,36 @@ export default function Layout({ children }: LayoutProps) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <div className="mt-8 flex h-full flex-col">
-                    <div className="flex-1 overflow-auto pr-2">
+                <SheetContent side="right" className="w-[85vw] max-w-sm p-0 sm:w-80">
+                  <div className="flex h-full flex-col bg-white">
+                    <div className="border-b border-gray-100 px-4 py-6">
+                      <div className="flex items-center gap-4">
+                        <img src="/logo.png" alt="RAJYADU" className="h-12 w-auto" />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate text-base font-semibold text-gray-900">
+                            {isAuthenticated ? displayName || "Welcome" : "Welcome"}
+                          </div>
+                          <div className="text-sm text-gray-500">Browse and shop</div>
+                        </div>
+                        <SheetClose asChild>
+                          <Button variant="ghost" size="icon" aria-label="Close menu" className="h-10 w-10 rounded-full hover:bg-gray-100">
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-auto px-2 py-3">
                       <div className="space-y-1">
                         <SheetClose asChild>
                           <Link
                             href="/"
-                            className={`block rounded-md px-3 py-2 text-lg font-medium transition-colors ${
-                              isActiveLink("/") ? "text-primary" : "text-gray-700 hover:text-primary"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                              isActiveLink("/")
+                                ? "bg-red-50 text-primary"
+                                : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                             }`}
                           >
+                            <HomeIcon className="h-4 w-4" />
                             Home
                           </Link>
                         </SheetClose>
@@ -209,28 +231,48 @@ export default function Layout({ children }: LayoutProps) {
                         <SheetClose asChild>
                           <Link
                             href="/wishlist"
-                            className={`block rounded-md px-3 py-2 text-lg font-medium transition-colors ${
+                            className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                               isActiveLink("/wishlist")
-                                ? "text-primary"
-                                : "text-gray-700 hover:text-primary"
+                                ? "bg-red-50 text-primary"
+                                : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                             }`}
                           >
-                            Wishlist
+                            <span className="flex items-center gap-3">
+                              <Heart className="h-4 w-4" />
+                              Wishlist
+                            </span>
+                            {wishlistCount > 0 ? (
+                              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                                {wishlistCount}
+                              </span>
+                            ) : null}
                           </Link>
                         </SheetClose>
 
                         <SheetClose asChild>
                           <Link
                             href="/cart"
-                            className={`block rounded-md px-3 py-2 text-lg font-medium transition-colors ${
-                              isActiveLink("/cart") ? "text-primary" : "text-gray-700 hover:text-primary"
+                            className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                              isActiveLink("/cart")
+                                ? "bg-red-50 text-primary"
+                                : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                             }`}
                           >
-                            Cart
+                            <span className="flex items-center gap-3">
+                              <ShoppingCart className="h-4 w-4" />
+                              Cart
+                            </span>
+                            {cartCount > 0 ? (
+                              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                                {cartCount}
+                              </span>
+                            ) : null}
                           </Link>
                         </SheetClose>
 
-                        <div className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <Separator className="my-3" />
+
+                        <div className="px-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                           Categories
                         </div>
 
@@ -243,12 +285,13 @@ export default function Layout({ children }: LayoutProps) {
                                 <SheetClose asChild key={c.id}>
                                   <Link
                                     href={`/category/${c.slug}`}
-                                    className={`block rounded-md px-3 py-2 text-base font-medium transition-colors ${
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                       isActiveLink(`/category/${c.slug}`)
-                                        ? "text-primary"
-                                        : "text-gray-700 hover:text-primary"
+                                        ? "bg-red-50 text-primary"
+                                        : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                                     }`}
                                   >
+                                    <LayoutGrid className="h-4 w-4 opacity-70" />
                                     {c.name}
                                   </Link>
                                 </SheetClose>
@@ -257,18 +300,21 @@ export default function Layout({ children }: LayoutProps) {
 
                             return (
                               <AccordionItem key={c.id} value={`cat-${c.id}`} className="border-b-0">
-                                <AccordionTrigger className="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:no-underline">
-                                  {c.name}
+                                <AccordionTrigger className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-50 hover:text-primary hover:no-underline">
+                                  <span className="flex items-center gap-3">
+                                    <LayoutGrid className="h-4 w-4 opacity-70" />
+                                    {c.name}
+                                  </span>
                                 </AccordionTrigger>
                                 <AccordionContent className="pb-2">
-                                  <div className="space-y-1 pl-2">
+                                  <div className="space-y-1 pl-3">
                                     <SheetClose asChild>
                                       <Link
                                         href={`/category/${c.slug}`}
-                                        className={`block rounded-md px-3 py-2 text-sm transition-colors ${
+                                        className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
                                           isActiveLink(`/category/${c.slug}`)
-                                            ? "text-primary"
-                                            : "text-gray-600 hover:text-primary"
+                                            ? "bg-red-50 text-primary"
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-primary"
                                         }`}
                                       >
                                         All {c.name}
@@ -278,7 +324,7 @@ export default function Layout({ children }: LayoutProps) {
                                       <SheetClose asChild key={sc.id}>
                                         <Link
                                           href={`/category/${c.slug}?sub=${encodeURIComponent(sc.slug)}`}
-                                          className="block rounded-md px-3 py-2 text-sm text-gray-600 transition-colors hover:text-primary"
+                                          className="block rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-primary"
                                         >
                                           {sc.name}
                                         </Link>
@@ -291,28 +337,32 @@ export default function Layout({ children }: LayoutProps) {
                           })}
                         </Accordion>
 
-                        <div className="mt-4 space-y-1">
+                        <Separator className="my-3" />
+
+                        <div className="space-y-1">
                           <SheetClose asChild>
                             <Link
                               href="/about"
-                              className={`block rounded-md px-3 py-2 text-lg font-medium transition-colors ${
+                              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                 isActiveLink("/about")
-                                  ? "text-primary"
-                                  : "text-gray-700 hover:text-primary"
+                                  ? "bg-red-50 text-primary"
+                                  : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                               }`}
                             >
+                              <Info className="h-4 w-4" />
                               About
                             </Link>
                           </SheetClose>
                           <SheetClose asChild>
                             <Link
                               href="/contact"
-                              className={`block rounded-md px-3 py-2 text-lg font-medium transition-colors ${
+                              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                                 isActiveLink("/contact")
-                                  ? "text-primary"
-                                  : "text-gray-700 hover:text-primary"
+                                  ? "bg-red-50 text-primary"
+                                  : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                               }`}
                             >
+                              <Phone className="h-4 w-4" />
                               Contact
                             </Link>
                           </SheetClose>
@@ -335,7 +385,7 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Navigation - Desktop */}
         <nav className="bg-gray-50 border-t border-gray-200 hidden md:block">
-          <div className="max-w-12xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center h-12">
               <div className="no-scrollbar flex w-full items-center justify-center gap-1 overflow-visible px-2">
                 <Link
@@ -411,20 +461,109 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </nav>
       </header>
+      ) : null}
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         {children}
       </main>
 
+      {!isEmbed ? (
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white md:hidden">
+          <div className="mx-auto grid max-w-md grid-cols-5 px-2 pb-[env(safe-area-inset-bottom)]">
+            <Link href="/" className="flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700">
+              <HomeIcon className={`h-5 w-5 ${isActiveLink("/") ? "text-primary" : "text-gray-700"}`} />
+              <span className={`${isActiveLink("/") ? "text-primary" : "text-gray-700"}`}>Home</span>
+            </Link>
+            <Link
+              href={categories && categories.length > 0 ? `/category/${categories[0].slug}` : "/"}
+              className="flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700"
+            >
+              <LayoutGrid className={`h-5 w-5 ${location.startsWith("/category") ? "text-primary" : "text-gray-700"}`} />
+              <span className={`${location.startsWith("/category") ? "text-primary" : "text-gray-700"}`}>Categories</span>
+            </Link>
+            <Link href="/wishlist" className="relative flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700">
+              <Heart className={`h-5 w-5 ${isActiveLink("/wishlist") ? "text-primary" : "text-gray-700"}`} />
+              {wishlistCount > 0 && (
+                <span className="absolute right-4 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                  {wishlistCount}
+                </span>
+              )}
+              <span className={`${isActiveLink("/wishlist") ? "text-primary" : "text-gray-700"}`}>Wishlist</span>
+            </Link>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Account"
+                    className="flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700"
+                  >
+                    <User
+                      className={`h-5 w-5 ${location.startsWith("/account") ? "text-primary" : "text-gray-700"}`}
+                    />
+                    <span className={`${location.startsWith("/account") ? "text-primary" : "text-gray-700"}`}>Account</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="top" align="center" className="w-56">
+                  <DropdownMenuLabel className="truncate">{displayName || "Account"}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/account/orders" className="flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Orders
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/account/change-password" className="flex items-center gap-2">
+                      <KeyRound className="h-4 w-4" />
+                      Change Password
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      logout();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700"
+              >
+                <User className={`h-5 w-5 ${location.startsWith("/account") ? "text-primary" : "text-gray-700"}`} />
+                <span className={`${location.startsWith("/account") ? "text-primary" : "text-gray-700"}`}>Account</span>
+              </Link>
+            )}
+            <Link href="/cart" className="relative flex flex-col items-center justify-center gap-1 py-2 text-xs text-gray-700">
+              <ShoppingCart className={`h-5 w-5 ${isActiveLink("/cart") ? "text-primary" : "text-gray-700"}`} />
+              {cartCount > 0 && (
+                <span className="absolute right-4 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                  {cartCount}
+                </span>
+              )}
+              <span className={`${isActiveLink("/cart") ? "text-primary" : "text-gray-700"}`}>Cart</span>
+            </Link>
+          </div>
+        </nav>
+      ) : null}
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="max-w-12xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      {!isEmbed ? (
+      <footer className="bg-gray-900 text-white pt-10 pb-24 sm:py-16">
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-8">
             {/* Company Info */}
             <div>
-              <div className="flex items-center mb-4">
-                <img src="/logo.png" alt="" className="h-30 w-40" />
+              <div className="flex items-center mb-3">
+                <img src="/logo.png" alt="" className="h-14 w-auto max-w-[180px] sm:h-20" />
                 <h3 className="text-xl font-bold"></h3>
               </div>
            
@@ -505,15 +644,31 @@ export default function Layout({ children }: LayoutProps) {
         
           {/* Copyright */}
           <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2026 Discover RAJYADU. All rights reserved.
+            <p className="text-center text-gray-400 text-sm">
+              {new Date().getFullYear()} RAJYADU Organic Food. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
+      ) : null}
       
       {/* Chatbot */}
-      <Chatbot />
+      {!isEmbed ? (
+        <>
+          <div className="fixed bottom-36 right-4 z-50 sm:bottom-20">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+              onClick={() => setIsDark((v) => !v)}
+              className="h-14 w-14 rounded-full shadow-lg bg-white border border-gray-200 hover:bg-gray-50"
+            >
+              {isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+            </Button>
+          </div>
+          <Chatbot />
+        </>
+      ) : null}
     </div>
   );
 }

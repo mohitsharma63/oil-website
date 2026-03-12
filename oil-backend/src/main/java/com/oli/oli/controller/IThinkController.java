@@ -62,7 +62,7 @@ public class IThinkController {
     private String defaultServiceType;
 
     // Optional proxy: if set, /api/ithink/serviceability will forward to this upstream
-    // Example: https://api.rajyadu.in
+    // Example: http://localshot:8085
     @Value("${ithink.serviceability.proxy-base-url:}")
     private String serviceabilityProxyBaseUrl;
 

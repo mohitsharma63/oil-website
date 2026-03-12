@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "@/components/layout";
 import AdminLayout from "@/components/admin-layout";
 import AdminProtectedRoute from "@/components/admin-protected-route";
+import { useScrollToTop } from "@/hooks/use-scroll-to-top";
 import Home from "@/pages/home";
 import Category from "@/pages/category";
 import ProductDetail from "@/pages/product-detail";
@@ -32,14 +33,18 @@ import AdminProducts from "@/pages/admin/products";
 import AdminCategories from "@/pages/admin/categories";
 import AdminSubCategories from "@/pages/admin/subcategories";
 import AdminSliders from "@/pages/admin/sliders";
+import AdminCertificates from "@/pages/admin/certificates";
 import AdminOrders from "@/pages/admin/orders";
 import AdminCustomers from "@/pages/admin/customers";
 import AdminSettings from "@/pages/admin/settings";
+import AdminReports from "@/pages/admin/reports";
 import AdminTermsConditions from "@/pages/admin/terms-conditions";
 import AdminLogin from "@/pages/admin/login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  useScrollToTop();
+  
   return (
     <Switch>
       <Route path="/account/orders/:id/invoice">
@@ -83,10 +88,24 @@ function Router() {
           </AdminLayout>
         </AdminProtectedRoute>
       </Route>
+      <Route path="/admin/certificates">
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminCertificates />
+          </AdminLayout>
+        </AdminProtectedRoute>
+      </Route>
       <Route path="/admin/orders">
         <AdminProtectedRoute>
           <AdminLayout>
             <AdminOrders />
+          </AdminLayout>
+        </AdminProtectedRoute>
+      </Route>
+      <Route path="/admin/reports">
+        <AdminProtectedRoute>
+          <AdminLayout>
+            <AdminReports />
           </AdminLayout>
         </AdminProtectedRoute>
       </Route>

@@ -820,7 +820,7 @@
     "variable": [
       {
         "key": "baseUrl",
-        "value": "https://api.rajyadu.in"
+        "value": "http://localshot:8085"
       },
       {
         "key": "categoryId",

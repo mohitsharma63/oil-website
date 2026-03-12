@@ -121,7 +121,10 @@ export default function OrderInvoice() {
             <CardContent className="p-8">
               <div className="flex items-start justify-between gap-6">
                 <div className="space-y-1">
-                  <div className="text-xl font-bold text-gray-900">RAJYADU Organic Food</div>
+                  <div className="flex items-center gap-3">
+                    <img src="/logo.png" alt="" className="h-10 w-auto" />
+                    <div className="text-xl font-bold text-gray-900">RAJYADU Organic Food</div>
+                  </div>
                   <div className="text-sm text-gray-600">Invoice</div>
                 </div>
                 <div className="text-right text-sm">

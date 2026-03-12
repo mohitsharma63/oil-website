@@ -89,7 +89,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
           <img
             src={oliAssetUrl(product.imageUrl) || product.imageUrl || "/placeholder-product.jpg"}
             alt={product.name}
-            className="product-image h-64 w-full cursor-pointer  transition-transform duration-300 group-hover:scale-[1.03]"
+            className="product-image h-48 w-full cursor-pointer object-cover object-center bg-white transition-transform duration-300 group-hover:scale-[1.03] sm:h-64"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/placeholder-product.jpg";
             }}
@@ -97,7 +97,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
         </Link>
       </div>
 
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-center mb-2">
           <div className="star-rating">
             {renderStars(ratingValue)}
@@ -106,7 +106,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
         </div>
 
         <Link href={`/product/${product.slug}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-red-500 transition-colors cursor-pointer">
+          <h3 className="font-semibold text-gray-900 mb-2 hover:text-red-500 transition-colors cursor-pointer text-sm sm:text-base">
             {product.name}
           </h3>
         </Link>

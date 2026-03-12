@@ -247,7 +247,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({
                               <img
                                 src={oliAssetUrl(category.imageUrl) || category.imageUrl || "/placeholder-category.jpg"}
                                 alt={category.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full "
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src = "/placeholder-category.jpg";
                                 }}
@@ -284,7 +284,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({
                               <img
                                 src={oliAssetUrl(product.imageUrl) || product.imageUrl || "/placeholder-product.jpg"}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full "
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src = "/placeholder-product.jpg";
                                 }}

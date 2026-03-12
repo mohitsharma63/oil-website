@@ -67,7 +67,7 @@ const TermsAndConditions: React.FC = () => {
   const [, setLocation] = useLocation();
 
   const handleEmailClick = () => {
-    window.location.href = 'mailto:support@rajyadu.com?subject=Terms & Conditions Inquiry&body=Hi Rajyadu Team,';
+    window.location.href = 'mailto:dhudaramsonsorganic5358@gmail.com?subject=Terms & Conditions Inquiry&body=Hi Rajyadu Team,';
   };
 
   const handleCallClick = () => {
@@ -471,14 +471,14 @@ const TermsAndConditions: React.FC = () => {
                         <Phone className="w-4 h-4 text-green-600" />
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">Phone</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">+91 98765 43210</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">+91 8003845358</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <Mail className="w-4 h-4 text-green-600" />
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">Email</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">support@rajyadu.com</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">dhudaramsonsorganic5358@gmail.com</p>
                         </div>
                       </div>
                     

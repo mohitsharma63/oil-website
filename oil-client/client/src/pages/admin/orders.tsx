@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -45,6 +51,13 @@ export default function AdminOrders() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [preview, setPreview] = useState<{
+    title: string;
+    url: string;
+    allowPrint?: boolean;
+  } | null>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   const { data: orders = [], isLoading, refetch } = useQuery<AdminOrderDto[]>({
     queryKey: [oliUrl("/api/admin/orders")],
@@ -366,14 +379,24 @@ export default function AdminOrders() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(`/account/orders/${encodeURIComponent(order.id)}`, "_blank")}
+                            onClick={() =>
+                              setPreview({
+                                title: "Order Details",
+                                url: `/account/orders/${encodeURIComponent(order.id)}?embed=1`,
+                              })
+                            }
                           >
                             View
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(`/account/orders/${encodeURIComponent(order.id)}/track`, "_blank")}
+                            onClick={() =>
+                              setPreview({
+                                title: "Track Order",
+                                url: `/account/orders/${encodeURIComponent(order.id)}/track?embed=1`,
+                              })
+                            }
                           >
                             Track
                           </Button>
@@ -381,10 +404,11 @@ export default function AdminOrders() {
                             variant="outline"
                             size="sm"
                             onClick={() =>
-                              window.open(
-                                `/account/orders/${encodeURIComponent(order.id)}/invoice?download=1`,
-                                "_blank"
-                              )
+                              setPreview({
+                                title: "Invoice Preview",
+                                url: `/account/orders/${encodeURIComponent(order.id)}/invoice`,
+                                allowPrint: true,
+                              })
                             }
                           >
                             Invoice
@@ -407,6 +431,56 @@ export default function AdminOrders() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!preview} onOpenChange={(open) => (!open ? setPreview(null) : undefined)}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <DialogTitle>{preview?.title || "Preview"}</DialogTitle>
+              <div className="flex gap-2">
+                {preview?.allowPrint ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const win = previewIframeRef.current?.contentWindow;
+                      if (win) win.print();
+                    }}
+                  >
+                    Download
+                  </Button>
+                ) : null}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (!preview?.url) return;
+                    const fullUrl = preview.url
+                      .replace(/([?&])embed=1(&|$)/, (m, p1, p2) => (p2 ? p1 : ""))
+                      .replace(/[?&]$/, "");
+                    window.open(fullUrl, "_blank");
+                  }}
+                  disabled={!preview?.url}
+                >
+                  Open
+                </Button>
+                <Button variant="outline" onClick={() => setPreview(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="rounded-md border bg-background overflow-hidden">
+            {preview?.url ? (
+              <iframe
+                ref={previewIframeRef}
+                title="Preview"
+                src={preview.url}
+                className="w-full h-[70vh]"
+              />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

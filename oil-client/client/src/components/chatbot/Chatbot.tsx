@@ -19,7 +19,6 @@ import {
   Package,
   Truck,
   HelpCircle,
-  WhatsApp,
   Clock,
   Star,
   Loader2
@@ -352,7 +351,7 @@ const Chatbot: React.FC = () => {
       addBotMessage(
         "📞 **WhatsApp पर हमसे जुड़ें:**\n\n" +
         "🟢 **डायरेक्ट WhatsApp चैट:**\n" +
-        "• नंबर: +91 98765 43210\n" +
+        "• नंबर: +91 8003845358\n" +
         "• टाइम: 8AM - 8PM\n\n" +
         "📱 **यहां क्लिक करें:**\n" +
         "https://wa.me/919876543210\n\n" +
@@ -400,7 +399,7 @@ const Chatbot: React.FC = () => {
         "🔹 ऑर्डर ट्रैक करना है?\n" +
         "🔹 होम डिलीवरी की जानकारी?\n" +
         "🔹 WhatsApp पर बात करना है?\n\n" +
-        "या मुझे कॉल करें: +91 98765 43210"
+        "या मुझे कॉल करें: +91 8003845358"
       );
     }
 
@@ -422,7 +421,7 @@ const Chatbot: React.FC = () => {
         `आपका नंबर: ${userPhone}\n` +
         `हमारी टीम जल्दी ही आपसे संपर्क करेगी।\n\n` +
         `📞 **इमीडिएट कॉल के लिए:**\n` +
-        `+91 98765 43210\n\n` +
+        `+91 8003845358\n\n` +
         `⏰ **टाइमिंग:** 8AM - 8PM`,
         'text'
       );
@@ -439,7 +438,7 @@ const Chatbot: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-20 right-4 z-50 sm:bottom-4">
       {!isOpen ? (
         <Button
           onClick={() => setIsOpen(true)}
@@ -449,7 +448,7 @@ const Chatbot: React.FC = () => {
           <MessageCircle className="w-6 h-6" />
         </Button>
       ) : (
-        <Card className="w-96 h-[600px] shadow-2xl">
+        <Card className="h-[70vh] w-[90vw] max-w-sm shadow-2xl sm:h-[600px] sm:w-96">
           <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

@@ -88,7 +88,7 @@ export default function Contact() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Get in Touch</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Have questions about our products or need beauty advice? We're here to help you on your journey 
-            to healthier, more beautiful skin and hair.
+            to RAJYADU products
           </p>
         </div>
 
@@ -144,9 +144,12 @@ export default function Contact() {
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="product-inquiry">Product Inquiry</SelectItem>
-                      <SelectItem value="skin-consultation">Skin Consultation</SelectItem>
-                      <SelectItem value="order-support">Order Support</SelectItem>
+                      <SelectItem value="edible-oils">Edible Oils Inquiry</SelectItem>
+                      <SelectItem value="industrial-oils">Industrial Oils Inquiry</SelectItem>
+                      <SelectItem value="bulk-order">Bulk / Wholesale Order</SelectItem>
+                      <SelectItem value="dealership">Dealership / Distributorship</SelectItem>
+                      <SelectItem value="quality-certificates">Quality / Certificates</SelectItem>
+                      <SelectItem value="order-support">Order / Shipping Support</SelectItem>
                       <SelectItem value="general">General Question</SelectItem>
                     </SelectContent>
                   </Select>

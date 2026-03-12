@@ -32,11 +32,27 @@ interface RecentOrder {
   customerName?: string;
 }
 
+interface InventoryResponse {
+  outOfStockCount: number;
+  products: Array<{
+    id: number;
+    name: string;
+    inStock: boolean;
+  }>;
+}
+
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: [oliUrl("/api/admin/dashboard/stats")],
     queryFn: async () => {
       return await oliGetJson<DashboardStats>("/api/admin/dashboard/stats");
+    },
+  });
+
+  const { data: inventory, isLoading: inventoryLoading } = useQuery<InventoryResponse>({
+    queryKey: [oliUrl("/api/admin/dashboard/inventory")],
+    queryFn: async () => {
+      return await oliGetJson<InventoryResponse>("/api/admin/dashboard/inventory");
     },
   });
 
@@ -220,13 +236,30 @@ export default function AdminDashboard() {
           <CardTitle>Inventory Alerts</CardTitle>
         </CardHeader>
         <CardContent>
-          {statsLoading ? (
+          {inventoryLoading || statsLoading ? (
             <div className="text-sm text-muted-foreground">Loading...</div>
           ) : (
-            <div className="text-sm text-muted-foreground">
-              {stats && stats.activeProducts > 0
-                ? `All ${stats.activeProducts} products are in stock.`
-                : "No alerts."}
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground">
+                {inventory && inventory.outOfStockCount > 0
+                  ? `${inventory.outOfStockCount} product(s) are out of stock.`
+                  : stats && stats.activeProducts > 0
+                    ? `All ${stats.activeProducts} products are in stock.`
+                    : "No alerts."}
+              </div>
+
+              {inventory?.products && inventory.products.length > 0 ? (
+                <div className="space-y-2">
+                  {inventory.products.slice(0, 10).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between text-sm border-b pb-2">
+                      <div className="font-medium truncate pr-3">{p.name}</div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                        {p.inStock ? "In stock" : "Out of stock"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
           )}
         </CardContent>

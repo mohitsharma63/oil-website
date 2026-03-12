@@ -4,6 +4,7 @@ export const OLI_API_BASE_URL =
 export function oliUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
   const p = path.startsWith("/") ? path : `/${path}`;
+  if (!OLI_API_BASE_URL) return p;
   return `${OLI_API_BASE_URL}${p}`;
 }
 
@@ -11,6 +12,7 @@ export function oliAssetUrl(pathOrUrl: string | null | undefined): string | null
   if (!pathOrUrl) return null;
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
   const p = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
+  if (!OLI_API_BASE_URL) return p;
   return `${OLI_API_BASE_URL}${p}`;
 }
 

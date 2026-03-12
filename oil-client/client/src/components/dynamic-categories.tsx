@@ -79,7 +79,7 @@ const DynamicCategories: React.FC<DynamicCategoriesProps> = ({
                     <img
                       src={category.imageUrl || ''}
                       alt={category.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      className="w-full h-full  group-hover:scale-105 transition-transform duration-200"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         const placeholder = document.createElement('div');
@@ -137,7 +137,7 @@ const DynamicCategories: React.FC<DynamicCategoriesProps> = ({
                     <img
                       src={category.imageUrl || ''}
                       alt={category.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full "
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         const placeholder = document.createElement('div');

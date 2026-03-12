@@ -93,7 +93,7 @@ export default function SearchPage() {
                           <img
                             src={oliAssetUrl(category.imageUrl) || undefined}
                             alt={category.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full "
                           />
                         </div>
                         <CardContent className="p-4">

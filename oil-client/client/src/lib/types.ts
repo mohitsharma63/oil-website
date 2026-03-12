@@ -52,6 +52,14 @@ export interface Slider {
   imageUrl: string | null;
 }
 
+export interface Certificate {
+  id: number;
+  type: "LAB_TEST" | "FSSAI" | string;
+  title: string | null;
+  fileUrl: string | null;
+  lastUpdated: string | null;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;

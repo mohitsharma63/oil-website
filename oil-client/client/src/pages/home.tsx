@@ -1,13 +1,26 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import ProductCard from "@/components/product-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Product, Category, Slider } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { BadgeCheck, FileText, FlaskConical } from "lucide-react";
+import type { Product, Category, Slider, Certificate } from "@/lib/types";
 import { oliAssetUrl, oliGetJson, oliUrl } from "@/lib/oliApi";
 
 export default function Home() {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string>("");
+
   const { data: categories, isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: [oliUrl("/api/categories")],
     queryFn: () => oliGetJson<Category[]>("/api/categories"),
@@ -18,6 +31,11 @@ export default function Home() {
     queryFn: () => oliGetJson<Slider[]>("/api/sliders"),
   });
 
+  const { data: certificates = [] } = useQuery<Certificate[]>({
+    queryKey: [oliUrl("/api/certificates")],
+    queryFn: () => oliGetJson<Certificate[]>("/api/certificates"),
+  });
+
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: [oliUrl("/api/products")],
     queryFn: () => oliGetJson<Product[]>("/api/products"),
@@ -25,6 +43,23 @@ export default function Home() {
 
   const featuredProducts = products.filter((p) => p.featured);
   const bestsellerProducts = products.filter((p) => p.bestseller);
+
+  const { labCert, fssaiCert } = useMemo(() => {
+    const byCertType = new Map<string, Certificate>();
+    for (const c of certificates) {
+      byCertType.set(String(c.type || ""), c);
+    }
+    return {
+      labCert: byCertType.get("LAB_TEST"),
+      fssaiCert: byCertType.get("FSSAI"),
+    };
+  }, [certificates]);
+
+  const openPreview = (url: string, title: string) => {
+    setPreviewTitle(title);
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+  };
 
   const categoryImages = {
     skincare: "https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
@@ -49,15 +84,17 @@ export default function Home() {
             {slidersLoading ? (
               <Skeleton className="h-[220px] w-full sm:h-[280px] lg:h-[340px]" />
             ) : (
-              <img
-                src={
-                  oliAssetUrl(sliders?.[0]?.imageUrl) ??
-                  "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=500"
-                }
-                alt={sliders?.[0]?.title ?? "Promotional banner"}
-                className="h-[220px] w-full  sm:h-[280px] lg:h-[340px]"
-                loading="lazy"
-              />
+              <div className="h-[220px] w-full sm:h-[280px] lg:h-[340px]">
+                <img
+                  src={
+                    oliAssetUrl(sliders?.[0]?.imageUrl) ??
+                    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=500"
+                  }
+                  alt={sliders?.[0]?.title ?? "Promotional banner"}
+                  className="h-full w-full object-cover object-center"
+                  loading="lazy"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -95,7 +132,7 @@ export default function Home() {
                           undefined
                         }
                         alt={category.name}
-                        className="category-image w-full h-full rounded-xl"
+                        className="category-image w-full h-full rounded-xl  object-center"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-center mt-4 group-hover:text-red-500 transition-colors">
@@ -187,6 +224,121 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Why Choose Us */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-12xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Us</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              We back our quality with transparency and certifications.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+                    <FlaskConical className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900">Lab Tested Products</h3>
+                    <p className="mt-1 text-gray-600 leading-relaxed">
+                      Every batch is checked to ensure purity and quality.
+                    </p>
+                    <div className="mt-4">
+                      {labCert?.fileUrl ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="btn-secondary inline-flex items-center gap-2"
+                          onClick={() => {
+                            const url = oliAssetUrl(labCert.fileUrl);
+                            if (!url) return;
+                            openPreview(url, labCert.title || "Lab Tested Products");
+                          }}
+                        >
+                          <FileText className="h-4 w-4" />
+                          Preview
+                        </Button>
+                      ) : (
+                        <div className="text-sm text-gray-500">Certificate coming soon</div>
+                      )}
+                    </div>
+                  </div>
+                  <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+                    <BadgeCheck className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900">FSSAI Certified</h3>
+                    <p className="mt-1 text-gray-600 leading-relaxed">
+                      Certified for food safety and responsible standards.
+                    </p>
+                    <div className="mt-4">
+                      {fssaiCert?.fileUrl ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="btn-secondary inline-flex items-center gap-2"
+                          onClick={() => {
+                            const url = oliAssetUrl(fssaiCert.fileUrl);
+                            if (!url) return;
+                            openPreview(url, fssaiCert.title || "FSSAI Certified");
+                          }}
+                        >
+                          <FileText className="h-4 w-4" />
+                          Preview
+                        </Button>
+                      ) : (
+                        <div className="text-sm text-gray-500">Certificate coming soon</div>
+                      )}
+                    </div>
+                  </div>
+                  <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <Dialog
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open);
+          if (!open) {
+            setPreviewUrl(null);
+            setPreviewTitle("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-5xl p-0 overflow-hidden">
+          <div className="p-6 pb-0">
+            <DialogHeader>
+              <DialogTitle>{previewTitle || "Certificate"}</DialogTitle>
+              <DialogDescription>Preview only</DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="h-[75vh] w-full bg-muted">
+            {previewUrl ? (
+              <iframe
+                title={previewTitle || "Certificate"}
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                className="h-full w-full"
+              />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
