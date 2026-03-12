@@ -74,7 +74,7 @@ export default function OrdersHistory() {
     queryKey: [oliUrl("/api/orders"), email],
     queryFn: async () => {
       if (!email) return [];
-      const res = await fetch(`/api/orders?email=${encodeURIComponent(email)}`);
+      const res = await fetch(oliUrl(`/api/orders?email=${encodeURIComponent(email)}`));
       const json = await res.json();
       if (!res.ok) throw new Error(json?.message || json?.error || "Failed to fetch orders");
       return json as OrderDto[];

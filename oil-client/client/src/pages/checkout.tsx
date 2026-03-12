@@ -234,7 +234,7 @@ export default function Checkout() {
       try {
         setPayLoading(true);
         const returnUrl = `${window.location.origin}/payment/cashfree/return?order_id={order_id}`;
-        const resp = await fetch("/api/payments/cashfree/create-order", {
+        const resp = await fetch(oliUrl("/api/payments/cashfree/create-order"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -298,7 +298,7 @@ export default function Checkout() {
 
     try {
       setPayLoading(true);
-      const resp = await fetch("/api/orders", {
+      const resp = await fetch(oliUrl("/api/orders"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

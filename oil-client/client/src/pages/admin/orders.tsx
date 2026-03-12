@@ -62,7 +62,7 @@ export default function AdminOrders() {
   const { data: orders = [], isLoading, refetch } = useQuery<AdminOrderDto[]>({
     queryKey: [oliUrl("/api/admin/orders")],
     queryFn: async () => {
-      const res = await fetch("/api/admin/orders");
+      const res = await fetch(oliUrl("/api/admin/orders"));
       const json = await res.json();
       if (!res.ok) throw new Error(json?.message || json?.error || "Failed to fetch orders");
       return json as AdminOrderDto[];
@@ -85,7 +85,7 @@ export default function AdminOrders() {
 
     try {
       setSavingId(id);
-      const res = await fetch(`/api/admin/orders/${encodeURIComponent(id)}`, {
+      const res = await fetch(oliUrl(`/api/admin/orders/${encodeURIComponent(id)}`), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

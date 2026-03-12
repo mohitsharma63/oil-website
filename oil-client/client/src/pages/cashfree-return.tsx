@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useOrders } from "@/hooks/use-orders";
 import { useCart } from "@/hooks/use-cart";
+import { oliUrl } from "@/lib/oliApi";
 
 function getOrderIdFromUrl(): string | null {
   try {
@@ -42,7 +43,7 @@ export default function CashfreeReturn() {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/payments/cashfree/orders/${encodeURIComponent(orderId)}`)
+    fetch(oliUrl(`/api/payments/cashfree/orders/${encodeURIComponent(orderId)}`))
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) throw new Error(data?.message || data?.error || "Failed to fetch payment status");
@@ -60,7 +61,7 @@ export default function CashfreeReturn() {
               const pending = JSON.parse(raw);
 
               try {
-                await fetch("/api/orders", {
+                await fetch(oliUrl("/api/orders"), {
                   method: "POST",
                   headers: { "content-type": "application/json" },
                   body: JSON.stringify({
