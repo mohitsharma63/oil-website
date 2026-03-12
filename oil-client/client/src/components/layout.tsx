@@ -291,7 +291,7 @@ export default function Layout({ children }: LayoutProps) {
                                         : "text-gray-800 hover:bg-gray-50 hover:text-primary"
                                     }`}
                                   >
-                                    <LayoutGrid className="h-4 w-4 opacity-70" />
+                                    <span className="h-2 w-2 rounded-full bg-primary/70" />
                                     {c.name}
                                   </Link>
                                 </SheetClose>
@@ -300,14 +300,14 @@ export default function Layout({ children }: LayoutProps) {
 
                             return (
                               <AccordionItem key={c.id} value={`cat-${c.id}`} className="border-b-0">
-                                <AccordionTrigger className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-50 hover:text-primary hover:no-underline">
+                                <AccordionTrigger className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-50 hover:text-primary hover:no-underline focus:outline-none focus-visible:outline-none data-[state=open]:border data-[state=open]:border-primary/60">
                                   <span className="flex items-center gap-3">
-                                    <LayoutGrid className="h-4 w-4 opacity-70" />
+                                    <span className="h-2 w-2 rounded-full bg-primary/70" />
                                     {c.name}
                                   </span>
                                 </AccordionTrigger>
                                 <AccordionContent className="pb-2">
-                                  <div className="space-y-1 pl-3">
+                                  <div className="space-y-1 pl-6 border-l border-gray-200 ml-3">
                                     <SheetClose asChild>
                                       <Link
                                         href={`/category/${c.slug}`}
