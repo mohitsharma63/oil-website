@@ -46,7 +46,7 @@ export default function OrderDetail() {
   const { data, isLoading, error } = useQuery<OrderDto>({
     queryKey: [oliUrl(`/api/orders/${orderId}`)],
     queryFn: async () => {
-      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+      const res = await fetch(oliUrl(`/api/orders/${encodeURIComponent(orderId)}`));
       const json = await res.json();
       if (!res.ok) throw new Error(json?.message || json?.error || "Failed to load order");
       return json as OrderDto;
